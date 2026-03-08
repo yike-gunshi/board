@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏗️ 团队工作看板</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --card: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text-dim: #8b949e;
+    --accent: #58a6ff;
+    --green: #3fb950;
+    --yellow: #d29922;
+    --red: #f85149;
+    --orange: #db6d28;
+    --purple: #bc8cff;
+    --pink: #f778ba;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans SC', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  header {
+    text-align: center;
+    padding: 32px 0 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 32px;
+  }
+  header h1 { font-size: 2em; margin-bottom: 8px; }
+  header .meta { color: var(--text-dim); font-size: 0.9em; }
+  
+  .section { margin-bottom: 32px; }
+  .section-title {
+    font-size: 1.3em;
+    font-weight: 600;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  /* Agent Grid */
+  .agent-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+  }
+  .agent-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    transition: border-color 0.2s;
+  }
+  .agent-card:hover { border-color: var(--accent); }
+  .agent-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .agent-name {
+    font-size: 1.2em;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .agent-status {
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.75em;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .status-active { background: rgba(63,185,80,0.15); color: var(--green); border: 1px solid rgba(63,185,80,0.3); }
+  .status-idle { background: rgba(139,148,158,0.15); color: var(--text-dim); border: 1px solid rgba(139,148,158,0.3); }
+  .status-blocked { background: rgba(248,81,73,0.15); color: var(--red); border: 1px solid rgba(248,81,73,0.3); }
+  
+  .agent-model {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(88,166,255,0.1);
+    color: var(--accent);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.8em;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    margin-bottom: 8px;
+  }
+  .agent-task {
+    color: var(--text-dim);
+    font-size: 0.9em;
+  }
+  
+  /* TODO Cards */
+  .todo-list { display: flex; flex-direction: column; gap: 12px; }
+  .todo-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .todo-card.high { border-left: 3px solid var(--red); }
+  .todo-card.medium { border-left: 3px solid var(--yellow); }
+  .todo-card.low { border-left: 3px solid var(--green); }
+  .todo-priority {
+    font-size: 0.7em;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .priority-high { background: rgba(248,81,73,0.15); color: var(--red); }
+  .priority-medium { background: rgba(210,153,34,0.15); color: var(--yellow); }
+  .priority-low { background: rgba(63,185,80,0.15); color: var(--green); }
+  .todo-content h3 { font-size: 1em; margin-bottom: 4px; }
+  .todo-content p { color: var(--text-dim); font-size: 0.85em; }
+  .todo-tag {
+    display: inline-block;
+    background: rgba(188,140,255,0.12);
+    color: var(--purple);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 0.75em;
+    margin-top: 4px;
+  }
+  .todo-blocker {
+    display: inline-block;
+    background: rgba(248,81,73,0.12);
+    color: var(--red);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 0.75em;
+    margin-top: 4px;
+    margin-left: 4px;
+  }
+  
+  /* Active Tasks */
+  .active-card {
+    background: linear-gradient(135deg, rgba(63,185,80,0.08), rgba(88,166,255,0.08));
+    border: 1px solid rgba(63,185,80,0.3);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .active-card h3 { color: var(--green); margin-bottom: 8px; }
+  .active-detail { color: var(--text-dim); font-size: 0.9em; margin: 4px 0; }
+  .active-detail strong { color: var(--text); }
+  
+  /* Issues Table */
+  .issues-grid { display: flex; flex-direction: column; gap: 8px; }
+  .issue-row {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 12px;
+    align-items: center;
+    font-size: 0.9em;
+  }
+  .issue-name { font-weight: 500; }
+  .issue-impact { color: var(--text-dim); }
+  .issue-status {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.8em;
+    background: rgba(210,153,34,0.12);
+    color: var(--yellow);
+    white-space: nowrap;
+  }
+  
+  /* Completed */
+  .completed-list { display: flex; flex-direction: column; gap: 6px; }
+  .completed-item {
+    display: grid;
+    grid-template-columns: 70px 1fr auto auto;
+    gap: 12px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.85em;
+    align-items: center;
+  }
+  .completed-item:nth-child(odd) { background: rgba(22,27,34,0.5); }
+  .completed-date { color: var(--text-dim); font-family: monospace; }
+  .completed-task { color: var(--text); }
+  .completed-owner { color: var(--purple); font-size: 0.85em; }
+  .completed-note { color: var(--text-dim); font-size: 0.8em; text-align: right; }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    body { padding: 12px; }
+    .agent-grid { grid-template-columns: 1fr; }
+    .issue-row { grid-template-columns: 1fr; gap: 4px; }
+    .completed-item { grid-template-columns: 1fr; gap: 2px; }
+  }
+  
+  .pulse {
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🏗️ 团队工作看板</h1>
+  <div class="meta">最后更新：2026-03-08 22:30 CST &nbsp;|&nbsp; 维护人：总管（俊儿🦊）</div>
+</header>
+
+<!-- 各牛马状态 -->
+<div class="section">
+  <div class="section-title">👥 牛马阵容</div>
+  <div class="agent-grid">
+    <div class="agent-card">
+      <div class="agent-header">
+        <div class="agent-name">🦊 总管（俊儿）</div>
+        <span class="agent-status status-active">活跃</span>
+      </div>
+      <div class="agent-model">🧠 minimax/MiniMax-M2.5</div>
+      <div class="agent-task">协调管理 + 夜间轮询</div>
+    </div>
+    <div class="agent-card">
+      <div class="agent-header">
+        <div class="agent-name">🔍 调研</div>
+        <span class="agent-status status-idle">🟡 待命</span>
+      </div>
+      <div class="agent-model">🧠 minimax/MiniMax-M2.5</div>
+      <div class="agent-task">待命</div>
+    </div>
+    <div class="agent-card">
+      <div class="agent-header">
+        <div class="agent-name">📚 学习</div>
+        <span class="agent-status status-idle">待命</span>
+      </div>
+      <div class="agent-model">🧠 minimax/MiniMax-M2.5</div>
+      <div class="agent-task">待命</div>
+    </div>
+    <div class="agent-card">
+      <div class="agent-header">
+        <div class="agent-name">🎨 设计</div>
+        <span class="agent-status status-idle">待命</span>
+      </div>
+      <div class="agent-model">🧠 minimax/MiniMax-M2.5</div>
+      <div class="agent-task">待命</div>
+    </div>
+    <div class="agent-card">
+      <div class="agent-header">
+        <div class="agent-name">🔨 干活</div>
+        <span class="agent-status status-idle">待命</span>
+      </div>
+      <div class="agent-model">🧠 minimax/MiniMax-M2.5</div>
+      <div class="agent-task">待命</div>
+    </div>
+    <div class="agent-card">
+      <div class="agent-header">
+        <div class="agent-name">📝 总结</div>
+        <span class="agent-status status-idle">待命</span>
+      </div>
+      <div class="agent-model">🧠 minimax/MiniMax-M2.5</div>
+      <div class="agent-task">待命</div>
+    </div>
+  </div>
+</div>
+
+<!-- 进行中 -->
+<div class="section">
+  <div class="section-title">🏃 进行中</div>
+  <div class="active-card">
+    <h3>🔍 AI 新闻监控</h3>
+    <div class="active-detail"><strong>频道：</strong>情报站</div>
+    <div class="active-detail"><strong>数据源：</strong>Hacker News 首页 AI 筛选</div>
+    <div class="active-detail"><strong>频率：</strong>每 4 小时（8:00 / 12:00 / 16:00 / 20:00）</div>
+    <div class="active-detail"><strong>模型：</strong>minimax/MiniMax-M2.5</div>
+    <div class="active-detail"><strong>已安装 Skill：</strong>opennews-mcp · opentwitter-mcp（6551.io Token 已配置）</div>
+  </div>
+</div>
+
+<!-- 待办 — 数据源：TODO.md -->
+<div class="section">
+  <div class="section-title">📋 待办事项 <span style="font-size:0.6em;color:var(--text-dim);margin-left:8px;">数据源：TODO.md</span></div>
+  <div class="todo-list">
+    <!-- 🔴 高优先级 — 2026-03-05 新增调研类 -->
+    <div class="todo-card high">
+      <span class="todo-priority priority-high">高</span>
+      <div class="todo-content">
+        <h3>1. ✅ 安装 modelbox 检查系统提示词 token 消耗</h3>
+        <p>已完成 — Research ≈ 14.7K tokens，Main ≈ 21K tokens。工具定义占 48%，MEMORY.md 瘦身可省 ~4.5K tokens/轮</p>
+        <span class="todo-tag">调研🔍 ✅ 已完成</span>
+      </div>
+    </div>
+    <div class="todo-card high">
+      <span class="todo-priority priority-high">高</span>
+      <div class="todo-content">
+        <h3>2. 精简 MEMORY.md 控制在 200 行以内</h3>
+        <p>涉及文件修改，须 BuilderDong 审批后才能执行</p>
+        <span class="todo-tag">调研🔍 → 方案待审批</span>
+      </div>
+    </div>
+    <div class="todo-card high">
+      <span class="todo-priority priority-high">高</span>
+      <div class="todo-content">
+        <h3>3. 将 Scrapling 安装为 OpenClaw Skill</h3>
+        <p>增强爬虫能力，须 BuilderDong 审批后才能执行</p>
+        <span class="todo-tag">调研🔍 → 方案待审批</span>
+      </div>
+    </div>
+    <div class="todo-card high">
+      <span class="todo-priority priority-high">高</span>
+      <div class="todo-content">
+        <h3>4. 运行 agentshield 扫描检查配置安全</h3>
+        <p>涉及系统配置扫描，须 BuilderDong 审批后才能执行</p>
+        <span class="todo-tag">调研🔍 → 方案待审批</span>
+      </div>
+    </div>
+    <div class="todo-card high">
+      <span class="todo-priority priority-high">高</span>
+      <div class="todo-content">
+        <h3>5. 评估 openapi-to-skills 集成</h3>
+        <p>评估减少 token 消耗的可能</p>
+        <span class="todo-tag">调研🔍 → 方案待审批</span>
+      </div>
+    </div>
+    <div class="todo-card high">
+      <span class="todo-priority priority-high">高</span>
+      <div class="todo-content">
+        <h3>6. 评估 MCP 配置 token 开销，迁移可替代项到 Skill</h3>
+        <p>涉及 MCP 配置调整</p>
+        <span class="todo-tag">调研🔍 → 方案待审批</span>
+      </div>
+    </div>
+    <div class="todo-card high">
+      <span class="todo-priority priority-high">高</span>
+      <div class="todo-content">
+        <h3>7. ✅ 研究 Horizon 项目优化 AI 日报</h3>
+        <p>已完成 → 无需行动 — GitHub 搜不到具体 repo，我们 258 源已不逊色</p>
+        <span class="todo-tag">调研🔍 ✅ 已完成</span>
+      </div>
+    </div>
+    <div class="todo-card high">
+      <span class="todo-priority priority-high">高</span>
+      <div class="todo-content">
+        <h3>8. ✅ Multi-Source Tech News Digest 升级 AI 日报</h3>
+        <p>已完成 → 建议优化语义去重 — 我们 258 源 > 109 源，最值得优化的是语义去重（同一事件多篇报道）</p>
+        <span class="todo-tag">调研🔍 ✅ 已完成</span>
+      </div>
+    </div>
+    <div class="todo-card high">
+      <span class="todo-priority priority-high">高</span>
+      <div class="todo-content">
+        <h3>9. ✅ Personal Knowledge Base RAG 增强知识库</h3>
+        <p>已完成 → 合并到 QMD（#15/#17） — 推荐 QMD，原生 OpenClaw 集成是决定性优势</p>
+        <span class="todo-tag">调研🔍 ✅ 已完成</span>
+      </div>
+    </div>
+    <div class="todo-card high">
+      <span class="todo-priority priority-high">高</span>
+      <div class="todo-content">
+        <h3>10. ✅ Pre-Build Idea Validator</h3>
+        <p>已完成评估 → 待执行(P2) — 推荐写 idea-validator Skill（gh+npm+HN+PyPI），工作量 ~2h，优先级低</p>
+        <span class="todo-tag">调研🔍 ✅ 已完成评估</span>
+      </div>
+    </div>
+    <div class="todo-card high">
+      <span class="todo-priority priority-high">高</span>
+      <div class="todo-content">
+        <h3>11. 每日简报和邮件处理自动化</h3>
+        <p>cron+message 组合，每日简报（日程+邮件+天气+CI/CD）+ 邮件分类（30分→5分）</p>
+        <span class="todo-tag">调研🔍 → 方案待审批</span>
+      </div>
+    </div>
+    <div class="todo-card high">
+      <span class="todo-priority priority-high">高</span>
+      <div class="todo-content">
+        <h3>12. ✅ 审计 OpenClaw "脚手架"</h3>
+        <p>已完成评估 → 待审批执行 — 保留5项/脚手架7项/冗余4项。MEMORY.md 已完成 TODO ~100行白吃 token 需清理</p>
+        <span class="todo-tag">调研🔍 ✅ 待审批执行</span>
+      </div>
+    </div>
+    <div class="todo-card high">
+      <span class="todo-priority priority-high">高</span>
+      <div class="todo-content">
+        <h3>13. ✅ 强化上下文工程（P0）</h3>
+        <p>已完成评估 → 待审批执行 — main MEMORY.md 24KB 是最大 token 黑洞，分层瘦身 24KB→3KB 可每轮省 21KB token</p>
+        <span class="todo-tag">调研🔍 ✅ P0 待审批执行</span>
+      </div>
+    </div>
+    <div class="todo-card high">
+      <span class="todo-priority priority-high">高</span>
+      <div class="todo-content">
+        <h3>14. ✅ 调研 OpenAI Responses API</h3>
+        <p>已完成 → 无需行动 — 主力模型非 OpenAI，OpenClaw 框架已内建类似能力（长任务+状态管理+工具循环）</p>
+        <span class="todo-tag">调研🔍 ✅ 已完成</span>
+      </div>
+    </div>
+    <div class="todo-card high">
+      <span class="todo-priority priority-high">高</span>
+      <div class="todo-content">
+        <h3>15. 在 Mac Mini 安装 QMD 并测试索引</h3>
+        <p>bun install -g @tobilu/qmd，用知识学习目录做索引测试，评估搜索质量和资源开销</p>
+        <span class="todo-tag">调研🔍 → 方案待审批</span>
+      </div>
+    </div>
+    <div class="todo-card high">
+      <span class="todo-priority priority-high">高</span>
+      <div class="todo-content">
+        <h3>16. ✅ 评估 ZenMux 订阅性价比</h3>
+        <p>已完成评估 — 推荐 Pro ($20/月) 试水，暂不上 Max。$100/月可撬动 5-10 倍 API 价格杠杆</p>
+        <span class="todo-tag">调研🔍 ✅ 待审批</span>
+      </div>
+    </div>
+    <div class="todo-card high">
+      <span class="todo-priority priority-high">高</span>
+      <div class="todo-content">
+        <h3>17. 测试 QMD 的 OpenClaw memory 集成</h3>
+        <p>用 memory.backend: "qmd" 配置跑测试，对比 Token 消耗变化</p>
+        <span class="todo-tag">调研🔍 → 方案待审批</span>
+      </div>
+    </div>
+    <!-- 🔴 高优先级 — 原有 -->
+    <div class="todo-card high">
+      <span class="todo-priority priority-high">高</span>
+      <div class="todo-content">
+        <h3>18. 安装 md2wx CLI 替代 Playwright 方案</h3>
+        <p>专为 AI Agent 设计的公众号排版 CLI，38+ 主题，一行命令排版 + 推送草稿箱</p>
+        <span class="todo-tag">干活🔨</span>
+        <span class="todo-blocker">⛔ 需要公众号 AppID + Secret</span>
+      </div>
+    </div>
+    <div class="todo-card high">
+      <span class="todo-priority priority-high">高</span>
+      <div class="todo-content">
+        <h3>19. 微信文章 v3 插画生成 + 发布</h3>
+        <p>v3 文章内容已完成，需要 Lovart 生成配套插画后发布</p>
+        <span class="todo-tag">设计🎨 → 干活🔨</span>
+      </div>
+    </div>
+    <div class="todo-card high">
+      <span class="todo-priority priority-high">高</span>
+      <div class="todo-content">
+        <h3>20. 小红书 cookie 重新登录</h3>
+        <p>cookie 过期，xhs-toolkit 全部功能不可用</p>
+        <span class="todo-tag">干活🔨</span>
+        <span class="todo-blocker">⛔ 需要老大扫码</span>
+      </div>
+    </div>
+    <div class="todo-card high">
+      <span class="todo-priority priority-high">高</span>
+      <div class="todo-content">
+        <h3>21. 小红书 Playwright+MCP 融合版：Scrapling 浏览器扫码登录</h3>
+        <p>融合版 v2 代码已完成（4 模块 1199 行），需老大终端手动扫码登录</p>
+        <span class="todo-tag">干活🔨</span>
+        <span class="todo-blocker">⛔ 需老大手动执行终端命令</span>
+      </div>
+    </div>
+    <!-- 🟡 中优先级 -->
+    <div class="todo-card medium">
+      <span class="todo-priority priority-medium">中</span>
+      <div class="todo-content">
+        <h3>opentwitter-mcp + opennews-mcp 安装</h3>
+        <p>clawhub 超时失败待重试，需确认包名是否正确</p>
+        <span class="todo-tag">干活🔨</span>
+      </div>
+    </div>
+    <div class="todo-card medium">
+      <span class="todo-priority priority-medium">中</span>
+      <div class="todo-content">
+        <h3>视频 Prompt 测试方案待选</h3>
+        <p>设计专家已出 65 条测试案例，等老大选方案方向</p>
+        <span class="todo-tag">老大 → 设计🎨</span>
+      </div>
+    </div>
+    <div class="todo-card medium">
+      <span class="todo-priority priority-medium">中</span>
+      <div class="todo-content">
+        <h3>lovart-gen SKILL.md 补充 model 参数</h3>
+        <p>Lovart 支持 model 参数（nbp/nb2），SKILL.md 缺文档</p>
+        <span class="todo-tag">干活🔨</span>
+      </div>
+    </div>
+    <div class="todo-card medium">
+      <span class="todo-priority priority-medium">中</span>
+      <div class="todo-content">
+        <h3>配置 cron fallback 模型</h3>
+        <p>防止 API 超时导致 cron 任务全部失败</p>
+        <span class="todo-tag">总管🦊</span>
+      </div>
+    </div>
+    <!-- 🟢 低优先级 -->
+    <div class="todo-card low">
+      <span class="todo-priority priority-low">低</span>
+      <div class="todo-content">
+        <h3>agent-browser 长期关注</h3>
+        <p>Vercel 出品 16.4k stars，和 OpenClaw Browser 80% 重叠，等 Diffing 功能再评估</p>
+      </div>
+    </div>
+    <div class="todo-card low">
+      <span class="todo-priority priority-low">低</span>
+      <div class="todo-content">
+        <h3>订阅 Latent.Space</h3>
+        <p>AI 顶级日更聚合（swyx），建议接入新闻系统</p>
+        <span class="todo-tag">调研🔍</span>
+      </div>
+    </div>
+    <div class="todo-card low">
+      <span class="todo-priority priority-low">低</span>
+      <div class="todo-content">
+        <h3>iMessage Full Disk Access</h3>
+        <p>系统偏好设置 → 隐私 → 完全磁盘访问 → 给 OpenClaw 授权</p>
+        <span class="todo-blocker">⛔ 需老大手动授权</span>
+      </div>
+    </div>
+    <div class="todo-card low">
+      <span class="todo-priority priority-low">低</span>
+      <div class="todo-content">
+        <h3>Seedance 知识库持续完善</h3>
+        <p>首批 17 网站 + 10 博主已整理，持续补充</p>
+        <span class="todo-tag">调研🔍 + 学习📚</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 已知问题 -->
+<div class="section">
+  <div class="section-title">⚠️ 已知问题</div>
+  <div class="issues-grid">
+    <div class="issue-row">
+      <span class="issue-name">iMessage permissionDenied</span>
+      <span class="issue-impact">iMessage 模块不可用</span>
+      <span class="issue-status">需老大授权</span>
+    </div>
+    <div class="issue-row">
+      <span class="issue-name">小红书 cookie 过期</span>
+      <span class="issue-impact">xhs 功能全部不可用</span>
+      <span class="issue-status">需老大扫码</span>
+    </div>
+    <div class="issue-row">
+      <span class="issue-name">OpenTwitter 搜索端点不稳定</span>
+      <span class="issue-impact">twitter_search 偶发 EOF</span>
+      <span class="issue-status">6551 服务端问题</span>
+    </div>
+  </div>
+</div>
+
+<!-- 近期完成 -->
+<div class="section">
+  <div class="section-title">✅ 近期完成</div>
+  <div class="completed-list">
+    <div class="completed-item">
+      <span class="completed-date">02-28</span>
+      <span class="completed-task">AI 新闻监控上线</span>
+      <span class="completed-owner">总管🦊+调研🔍</span>
+      <span class="completed-note">HN 首页筛选→情报站，每 4h</span>
+    </div>
+    <div class="completed-item">
+      <span class="completed-date">02-28</span>
+      <span class="completed-task">opennews-mcp + opentwitter-mcp 安装</span>
+      <span class="completed-owner">总管🦊</span>
+      <span class="completed-note">ClawHub 安装+Token 配置完成</span>
+    </div>
+    <div class="completed-item">
+      <span class="completed-date">02-28</span>
+      <span class="completed-task">Git 大文件清理</span>
+      <span class="completed-owner">总管🦊</span>
+      <span class="completed-note">100MB 视频从历史中清除</span>
+    </div>
+    <div class="completed-item">
+      <span class="completed-date">02-28</span>
+      <span class="completed-task">agent-browser.dev 调研</span>
+      <span class="completed-owner">调研🔍</span>
+      <span class="completed-note">结论：可选装不急需</span>
+    </div>
+    <div class="completed-item">
+      <span class="completed-date">02-28</span>
+      <span class="completed-task">Seedance 资源汇总</span>
+      <span class="completed-owner">调研🔍</span>
+      <span class="completed-note">17 网站 + 10 博主</span>
+    </div>
+    <div class="completed-item">
+      <span class="completed-date">02-28</span>
+      <span class="completed-task">md2wechat CLI 学习</span>
+      <span class="completed-owner">学习📚</span>
+      <span class="completed-note">强烈推荐替代 Playwright</span>
+    </div>
+    <div class="completed-item">
+      <span class="completed-date">02-28</span>
+      <span class="completed-task">allowBots + users 白名单</span>
+      <span class="completed-owner">总管🦊</span>
+      <span class="completed-note">bot 互通已开启</span>
+    </div>
+    <div class="completed-item">
+      <span class="completed-date">02-28</span>
+      <span class="completed-task">Opus 超时修复</span>
+      <span class="completed-owner">总管🦊</span>
+      <span class="completed-note">CRS v1.1.286</span>
+    </div>
+    <div class="completed-item">
+      <span class="completed-date">02-28</span>
+      <span class="completed-task">TODO/看板机制建立</span>
+      <span class="completed-owner">总管🦊</span>
+      <span class="completed-note">本文件 + 置顶</span>
+    </div>
+    <div class="completed-item">
+      <span class="completed-date">02-27</span>
+      <span class="completed-task">Bailian 8 模型配置</span>
+      <span class="completed-owner">总管🦊</span>
+      <span class="completed-note">百炼平台已接入</span>
+    </div>
+    <div class="completed-item">
+      <span class="completed-date">02-27</span>
+      <span class="completed-task">探索→总结 agent 转型</span>
+      <span class="completed-owner">总管🦊</span>
+      <span class="completed-note">更名 + 迁移记忆</span>
+    </div>
+  </div>
+</div>
+
+<footer style="text-align:center; padding:24px 0; color:var(--text-dim); font-size:0.8em; border-top:1px solid var(--border); margin-top:16px;">
+  Powered by OpenClaw 🐾 &nbsp;|&nbsp; 自动维护，模型变更时同步更新
+</footer>
+
+</body>
+</html>
