@@ -1,0 +1,1967 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>团队任务调度台 · 任务控制台</title>
+  <meta name="color-scheme" content="dark">
+  <style>
+:root {
+  --bg: #0b1020;
+  --bg-soft: #0f172d;
+  --panel: #101826;
+  --panel-2: #131d2f;
+  --panel-3: #162337;
+  --surface: rgba(255, 255, 255, 0.04);
+  --surface-2: rgba(255, 255, 255, 0.06);
+  --border: rgba(148, 163, 184, 0.16);
+  --border-strong: rgba(96, 165, 250, 0.38);
+  --text: #ecf3ff;
+  --muted: #93a4bd;
+  --muted-2: #6d7f99;
+  --accent: #7dd3fc;
+  --blue: #60a5fa;
+  --violet: #a78bfa;
+  --emerald: #34d399;
+  --amber: #fbbf24;
+  --rose: #fb7185;
+  --slate: #cbd5e1;
+  --shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
+  --radius-xl: 24px;
+  --radius-lg: 18px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
+  --font: Inter, -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'PingFang SC', 'Noto Sans SC', sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body {
+  font-family: var(--font);
+  background:
+    radial-gradient(circle at top left, rgba(96, 165, 250, 0.14), transparent 26%),
+    radial-gradient(circle at 85% 0%, rgba(167, 139, 250, 0.12), transparent 22%),
+    linear-gradient(180deg, #090d18 0%, #0b1120 38%, #08101c 100%);
+  color: var(--text);
+}
+button, input, select, textarea {
+  font: inherit;
+}
+button {
+  cursor: pointer;
+}
+.app-shell {
+  width: min(1680px, calc(100% - 40px));
+  margin: 20px auto 28px;
+}
+.panel {
+  background: linear-gradient(180deg, rgba(18, 25, 38, 0.98), rgba(13, 19, 31, 0.98));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow);
+}
+.topbar {
+  padding: 22px 24px;
+  display: grid;
+  gap: 18px;
+}
+.topbar-main {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: flex-start;
+}
+.eyebrow,
+.section-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.topbar h1 {
+  margin: 8px 0 0;
+  font-size: 34px;
+  letter-spacing: -0.04em;
+}
+.topbar-subtitle {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+.topbar-meta,
+.topbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.meta-chip {
+  padding: 10px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--muted);
+  font-size: 12px;
+}
+.meta-chip strong {
+  color: var(--text);
+  font-weight: 600;
+}
+.btn,
+.icon-btn,
+.tab-btn,
+.filter-chip,
+.task-card,
+.summary-card,
+.timeline-card,
+.list-row,
+.archive-card,
+.focus-card,
+.quick-link {
+  transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease, color 0.16s ease, box-shadow 0.16s ease;
+}
+.btn {
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+}
+.btn:hover,
+.icon-btn:hover,
+.tab-btn:hover,
+.quick-link:hover {
+  transform: translateY(-1px);
+  border-color: rgba(125, 211, 252, 0.32);
+  background: rgba(125, 211, 252, 0.08);
+}
+.btn-primary {
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.24), rgba(34, 197, 94, 0.18));
+  border-color: rgba(125, 211, 252, 0.28);
+}
+.btn-danger {
+  border-color: rgba(251, 113, 133, 0.24);
+}
+.content-grid {
+  margin-top: 18px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 380px;
+  gap: 18px;
+  align-items: start;
+}
+.main-column {
+  display: grid;
+  gap: 18px;
+}
+.section {
+  padding: 22px 24px 24px;
+}
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+.section-title {
+  margin: 8px 0 0;
+  font-size: 22px;
+  letter-spacing: -0.03em;
+}
+.section-desc {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 14px;
+}
+.kpi-card {
+  padding: 18px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, rgba(20, 30, 48, 0.98), rgba(13, 19, 31, 0.98));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.kpi-card:hover,
+.focus-card:hover,
+.task-card:hover,
+.list-row:hover,
+.summary-card:hover,
+.archive-card:hover,
+.timeline-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+}
+.kpi-label {
+  color: var(--muted);
+  font-size: 13px;
+}
+.kpi-value {
+  margin-top: 8px;
+  font-size: 32px;
+  font-weight: 760;
+  letter-spacing: -0.05em;
+}
+.kpi-foot {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--muted-2);
+  line-height: 1.6;
+}
+.focus-wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) 320px;
+  gap: 16px;
+}
+.focus-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.focus-card,
+.quick-panel {
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(19, 27, 42, 0.98), rgba(12, 18, 29, 0.98));
+}
+.focus-card {
+  padding: 16px;
+  text-align: left;
+}
+.focus-card-top,
+.task-card-top,
+.task-card-foot,
+.summary-card-top,
+.list-row-main,
+.list-row-meta,
+.archive-card-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: flex-start;
+}
+.focus-card h3,
+.task-title,
+.summary-card h3,
+.archive-card h3 {
+  margin: 10px 0 0;
+  font-size: 15px;
+  line-height: 1.55;
+}
+.focus-card p,
+.task-copy,
+.summary-card p,
+.archive-card p,
+.timeline-card p,
+.detail-copy,
+.detail-muted,
+.empty-state {
+  color: var(--muted);
+  line-height: 1.7;
+  font-size: 13px;
+}
+.quick-panel {
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+}
+.quick-panel h3 {
+  margin: 0;
+  font-size: 15px;
+}
+.quick-link {
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  text-align: left;
+  color: var(--text);
+}
+.quick-link small,
+.focus-card-meta,
+.workspace-meta,
+.detail-stamp,
+.timeline-meta,
+.list-muted,
+.archive-meta,
+.lane-head p,
+.empty-meta {
+  color: var(--muted-2);
+  font-size: 12px;
+}
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 12px;
+  color: var(--text);
+}
+.badge.is-critical,
+.badge.priority-P0 {
+  color: #ffd6dd;
+  border-color: rgba(251, 113, 133, 0.28);
+  background: rgba(251, 113, 133, 0.12);
+}
+.badge.priority-P1,
+.badge.is-warning {
+  color: #ffe7b0;
+  border-color: rgba(251, 191, 36, 0.28);
+  background: rgba(251, 191, 36, 0.12);
+}
+.badge.priority-P2,
+.badge.stage-dispatched,
+.badge.stage-triage {
+  color: #d6e7ff;
+  border-color: rgba(96, 165, 250, 0.28);
+  background: rgba(96, 165, 250, 0.12);
+}
+.badge.priority-P3,
+.badge.stage-acked {
+  color: #e7e2ff;
+  border-color: rgba(167, 139, 250, 0.28);
+  background: rgba(167, 139, 250, 0.12);
+}
+.badge.stage-executing,
+.badge.stage-review {
+  color: #cbffe6;
+  border-color: rgba(52, 211, 153, 0.28);
+  background: rgba(52, 211, 153, 0.12);
+}
+.badge.stage-builder_queue,
+.badge.needs-builder {
+  color: #fff0bc;
+  border-color: rgba(251, 191, 36, 0.3);
+  background: rgba(251, 191, 36, 0.14);
+}
+.badge.stage-blocked,
+.badge.is-blocked {
+  color: #ffd6dd;
+  border-color: rgba(251, 113, 133, 0.28);
+  background: rgba(251, 113, 133, 0.12);
+}
+.view-toggle {
+  display: inline-flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.tab-btn {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+}
+.tab-btn.is-active {
+  color: var(--text);
+  border-color: var(--border-strong);
+  background: rgba(96, 165, 250, 0.12);
+}
+.toolbar-grid {
+  display: grid;
+  grid-template-columns: 2.3fr repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+.toolbar-field {
+  display: grid;
+  gap: 6px;
+}
+.toolbar-field span {
+  color: var(--muted);
+  font-size: 12px;
+}
+.toolbar-field input,
+.toolbar-field select,
+.detail-form select,
+.detail-form textarea {
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  outline: none;
+}
+.toolbar-field input:focus,
+.toolbar-field select:focus,
+.detail-form select:focus,
+.detail-form textarea:focus {
+  border-color: var(--border-strong);
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.12);
+}
+.workspace-meta {
+  margin-top: 14px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.view-panel.is-hidden {
+  display: none;
+}
+.board-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(260px, 1fr));
+  gap: 14px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.lane {
+  min-width: 260px;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  display: flex;
+  flex-direction: column;
+  min-height: 520px;
+}
+.lane.is-drop-target {
+  border-color: rgba(52, 211, 153, 0.45);
+  box-shadow: inset 0 0 0 1px rgba(52, 211, 153, 0.22);
+}
+.lane-head {
+  padding: 16px 16px 12px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.lane-head h3 {
+  margin: 0;
+  font-size: 14px;
+}
+.lane-count {
+  min-width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: rgba(125, 211, 252, 0.12);
+  color: var(--accent);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-family: var(--mono);
+}
+.lane-body {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 100%;
+}
+.task-card,
+.summary-card,
+.timeline-card,
+.archive-card,
+.list-row {
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(20, 28, 43, 0.98), rgba(12, 18, 29, 0.98));
+}
+.task-card {
+  width: 100%;
+  padding: 14px;
+  text-align: left;
+}
+.task-card.is-selected,
+.focus-card.is-selected,
+.list-row.is-selected,
+.archive-card.is-selected,
+.timeline-card.is-selected {
+  border-color: var(--border-strong);
+  box-shadow: inset 0 0 0 1px rgba(96, 165, 250, 0.18);
+}
+.task-card.is-dragging {
+  opacity: 0.45;
+}
+.task-title-row {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+}
+.task-metrics {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  color: var(--muted-2);
+  font-size: 11px;
+}
+.heat-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--muted-2);
+}
+.heat-dot.is-hot { background: var(--rose); }
+.heat-dot.is-warm { background: var(--amber); }
+.heat-dot.is-cool { background: var(--emerald); }
+.empty-state {
+  padding: 20px;
+  border-radius: 14px;
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.03);
+  text-align: center;
+}
+.summary-grid,
+.recent-grid,
+.archive-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.summary-card,
+.timeline-card,
+.archive-card {
+  padding: 16px;
+  text-align: left;
+}
+.summary-card h3,
+.timeline-card h3,
+.archive-card h3 {
+  margin: 10px 0 0;
+  font-size: 15px;
+}
+.list-view {
+  display: grid;
+  gap: 10px;
+}
+.list-head,
+.list-row {
+  display: grid;
+  grid-template-columns: 1.9fr 0.85fr 0.9fr 0.9fr 0.9fr 1fr;
+  gap: 12px;
+  align-items: center;
+}
+.list-head {
+  padding: 0 12px 10px;
+  color: var(--muted-2);
+  font-size: 12px;
+}
+.list-row {
+  width: 100%;
+  padding: 14px 12px;
+  text-align: left;
+}
+.list-title {
+  font-size: 14px;
+  font-weight: 650;
+}
+.archive-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.archive-stack {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.detail-shell {
+  position: sticky;
+  top: 20px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 40px);
+}
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.detail-header h2 {
+  margin: 8px 0 0;
+  font-size: 20px;
+}
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+}
+#closeDetailBtn {
+  display: none;
+}
+.detail-panel {
+  overflow: auto;
+  padding-top: 16px;
+}
+.detail-empty {
+  min-height: 220px;
+  display: grid;
+  place-items: center;
+}
+.detail-title {
+  margin: 12px 0 0;
+  font-size: 24px;
+  line-height: 1.35;
+  letter-spacing: -0.03em;
+}
+.detail-meta {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.detail-copy {
+  margin-top: 12px;
+}
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+.detail-block,
+.detail-stat,
+.history-item {
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+.detail-stat {
+  padding: 12px;
+}
+.detail-stat strong {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+}
+.detail-stat span {
+  display: block;
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.detail-form {
+  margin-top: 18px;
+  display: grid;
+  gap: 12px;
+}
+.detail-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.detail-field {
+  display: grid;
+  gap: 6px;
+}
+.detail-field span {
+  color: var(--muted);
+  font-size: 12px;
+}
+.detail-field textarea {
+  min-height: 92px;
+  resize: vertical;
+}
+.detail-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+.detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.detail-block {
+  padding: 14px;
+  margin-top: 16px;
+}
+.detail-block h3 {
+  margin: 0 0 10px;
+  font-size: 14px;
+}
+.history-list {
+  display: grid;
+  gap: 10px;
+}
+.history-item {
+  padding: 12px;
+}
+.detail-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 12, 0.66);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+}
+.toast-root {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  display: grid;
+  gap: 10px;
+  z-index: 50;
+}
+.toast {
+  min-width: 240px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(125, 211, 252, 0.26);
+  background: rgba(10, 17, 29, 0.96);
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+@media (max-width: 1480px) {
+  .kpi-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .toolbar-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .toolbar-search { grid-column: 1 / -1; }
+  .focus-wrap { grid-template-columns: 1fr; }
+}
+@media (max-width: 1180px) {
+  .content-grid { grid-template-columns: 1fr; }
+  .detail-shell {
+    position: fixed;
+    top: 0;
+    right: -440px;
+    width: min(420px, 100vw);
+    height: 100vh;
+    max-height: none;
+    z-index: 40;
+    border-radius: 0;
+    transition: right 0.2s ease;
+  }
+  .detail-shell.is-open { right: 0; }
+  .detail-backdrop.is-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  #closeDetailBtn { display: grid; }
+}
+@media (max-width: 920px) {
+  .app-shell { width: min(100% - 24px, 100%); margin-top: 12px; }
+  .topbar-main { flex-direction: column; }
+  .kpi-grid,
+  .summary-grid,
+  .recent-grid,
+  .archive-summary-grid,
+  .detail-grid,
+  .detail-form-grid,
+  .archive-stack,
+  .focus-grid { grid-template-columns: 1fr; }
+  .list-head,
+  .list-row { grid-template-columns: 1.6fr repeat(2, 1fr); }
+  .list-head div:nth-child(n+4),
+  .list-row > *:nth-child(n+4) { display: none; }
+}
+@media (max-width: 640px) {
+  .topbar,
+  .section,
+  .detail-shell { padding-left: 16px; padding-right: 16px; }
+  .btn { width: 100%; }
+  .topbar-actions { display: grid; grid-template-columns: 1fr 1fr; }
+  .toolbar-grid { grid-template-columns: 1fr; }
+}
+
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar panel">
+      <div class="topbar-main">
+        <div>
+          <div class="eyebrow">Task Control Center</div>
+          <h1>团队任务调度台</h1>
+          <p class="topbar-subtitle">BuilderDong 的桌面优先任务流转台 · 单文件预览 · 本地交互草稿可持久化</p>
+        </div>
+        <div class="topbar-meta">
+          <div class="meta-chip">数据源：<strong>data/tasks.json</strong></div>
+          <div class="meta-chip">生成时间：<strong>2026/03/13 08:06</strong></div>
+          <div class="meta-chip">部署入口：<strong>scripts/update-board.sh</strong></div>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button id="quickBuilderFilter" class="btn btn-primary" type="button">只看待我处理</button>
+        <button id="downloadExportBtn" class="btn" type="button">导出 JSON</button>
+        <button id="copyExportBtn" class="btn" type="button">复制 JSON</button>
+        <button id="clearOverridesBtn" class="btn btn-danger" type="button">清除本地修改</button>
+      </div>
+    </header>
+
+    <div class="content-grid">
+      <main class="main-column">
+        <section id="focusSection" class="panel section"></section>
+        <section id="kpiSection" class="kpi-grid"></section>
+
+        <section class="panel section">
+          <div class="section-head">
+            <div>
+              <div class="section-kicker">Workspace</div>
+              <h2 class="section-title">任务流转主区域</h2>
+              <p class="section-desc">桌面优先的控制台视图：先聚焦待处理，再进入看板、列表和归档操作。</p>
+            </div>
+            <div class="view-toggle" id="viewToggle"></div>
+          </div>
+
+          <div class="toolbar-grid">
+            <label class="toolbar-field toolbar-search">
+              <span>搜索</span>
+              <input id="searchInput" type="search" placeholder="搜索任务标题 / 摘要 / 标签 / 下一步">
+            </label>
+            <label class="toolbar-field">
+              <span>阶段</span>
+              <select id="filterStage"></select>
+            </label>
+            <label class="toolbar-field">
+              <span>负责人</span>
+              <select id="filterOwner"></select>
+            </label>
+            <label class="toolbar-field">
+              <span>优先级</span>
+              <select id="filterPriority"></select>
+            </label>
+            <label class="toolbar-field">
+              <span>分类</span>
+              <select id="filterCategory"></select>
+            </label>
+            <label class="toolbar-field">
+              <span>待我处理</span>
+              <select id="filterNeedsBuilder"></select>
+            </label>
+            <label class="toolbar-field">
+              <span>阻塞</span>
+              <select id="filterBlocked"></select>
+            </label>
+          </div>
+
+          <div class="workspace-meta" id="workspaceMeta"></div>
+          <div id="boardView" class="view-panel"></div>
+          <div id="listView" class="view-panel is-hidden"></div>
+          <div id="archiveView" class="view-panel is-hidden"></div>
+        </section>
+
+        <section id="riskSection" class="panel section"></section>
+        <section id="recentSection" class="panel section"></section>
+        <section id="archiveSummarySection" class="panel section"></section>
+      </main>
+
+      <aside id="detailShell" class="detail-shell panel">
+        <div class="detail-header">
+          <div>
+            <div class="section-kicker">Task Detail</div>
+            <h2>详情侧栏</h2>
+          </div>
+          <button id="closeDetailBtn" class="icon-btn" type="button" aria-label="关闭详情">×</button>
+        </div>
+        <div id="detailPanel" class="detail-panel"></div>
+      </aside>
+    </div>
+  </div>
+
+  <div id="detailBackdrop" class="detail-backdrop"></div>
+  <div id="toastRoot" class="toast-root"></div>
+
+  <script>window.__BOARD_PAYLOAD__ = {"version":1,"generatedAt":"2026-03-13T00:06:01.821Z","board":{"title":"团队任务调度台","subtitle":"BuilderDong 的桌面优先任务流转台","ownerFocus":"BuilderDong","authoritativeFile":"data/tasks.json","generatedArtifacts":["BOARD.html","BOARD.md","TODO-board.md","TODO.md"]},"meta":{"owners":{"builder":{"label":"BuilderDong","kind":"human","accent":"builder"},"main":{"label":"总管 🦊","kind":"agent","accent":"violet"},"research":{"label":"调研 🔍","kind":"agent","accent":"amber"},"learning":{"label":"学习 📚","kind":"agent","accent":"blue"},"design":{"label":"设计 🎨","kind":"agent","accent":"pink"},"worker":{"label":"干活 🔨","kind":"agent","accent":"emerald"},"summary":{"label":"总结 📝","kind":"agent","accent":"slate"}},"priorities":{"P0":{"label":"P0 / 立即推进","weight":0,"tone":"critical"},"P1":{"label":"P1 / 本周推进","weight":1,"tone":"high"},"P2":{"label":"P2 / 规划排队","weight":2,"tone":"medium"},"P3":{"label":"P3 / 长期关注","weight":3,"tone":"low"}},"categories":{"architecture":{"label":"OpenClaw 架构优化","tone":"violet"},"delivery":{"label":"项目交付","tone":"blue"},"research":{"label":"调研探索","tone":"amber"},"content":{"label":"内容发布","tone":"pink"},"ops":{"label":"系统配置","tone":"emerald"}},"stages":{"triage":{"label":"待分发","description":"还没正式进入任务链路","tone":"slate"},"dispatched":{"label":"已分发","description":"目标已明确，等待 ACK","tone":"blue"},"acked":{"label":"已 ACK","description":"已接单，准备进入执行","tone":"cyan"},"executing":{"label":"执行中","description":"已开始产出，持续回执","tone":"violet"},"builder_queue":{"label":"待我处理","description":"等 BuilderDong 决策 / 提供输入","tone":"amber"},"review":{"label":"待验收","description":"成果已出，待回归 / 待发布","tone":"emerald"},"blocked":{"label":"阻塞","description":"缺少外部条件或凭证","tone":"red"},"done":{"label":"已归档","description":"完成或阶段性关闭","tone":"green"}},"stageOrder":["triage","dispatched","acked","executing","builder_queue","review","blocked","done"]},"tasks":[{"id":"memory-compaction","title":"MEMORY.md 瘦身 + 上下文压缩方案落地","owner":"main","collaborators":["research"],"priority":"P0","stage":"builder_queue","substatus":"方案已齐，等拍板执行范围","category":"architecture","summary":"前期调研、token 分析、脚手架审计都已完成，现在缺执行落地。","goal":"让长期记忆与上下文工程真正减 token，而不是继续靠人工忍耐。","nextAction":"BuilderDong 确认先做 MEMORY 瘦身还是先做上下文压缩链路。","needsBuilder":true,"builderAction":"拍板执行范围与优先顺序","blocked":false,"blocker":"","updatedAt":"2026-03-11T21:30:00+08:00","createdAt":"2026-02-28T09:30:00+08:00","archived":false,"sourceRefs":["TODO.md","BOARD.md"],"tags":["memory","token","context-engineering"],"history":[{"at":"2026-02-28T10:20:00+08:00","actor":"research","type":"analysis","summary":"modelbox 与脚手架审计完成，问题定位到 memory 和系统提示词冗余。"},{"at":"2026-03-09T18:40:00+08:00","actor":"main","type":"plan","summary":"上下文压缩方案收敛，待进入执行。"},{"at":"2026-03-11T21:30:00+08:00","actor":"main","type":"status","summary":"并入待我处理队列，等 BuilderDong 拍板。"}]},{"id":"wechat-v3-illustration","title":"微信文章 v3 插画生成 + 发布","owner":"design","collaborators":["worker"],"priority":"P0","stage":"executing","substatus":"正文已好，当前卡在插画与最终发布","category":"content","summary":"文章主体已经准备好，只差插画与排版收尾。","goal":"把 v3 文章尽快变成可发布版本，不再长期悬而未决。","nextAction":"设计先补齐插画，再交给干活链路完成发布。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","updatedAt":"2026-03-11T18:20:00+08:00","createdAt":"2026-03-05T14:00:00+08:00","archived":false,"sourceRefs":["TODO.md","BOARD.md"],"tags":["wechat","content"],"history":[{"at":"2026-03-08T13:10:00+08:00","actor":"design","type":"progress","summary":"文章正文方案确认，进入视觉阶段。"},{"at":"2026-03-10T22:00:00+08:00","actor":"main","type":"status","summary":"明确仅剩插画与发布两步。"},{"at":"2026-03-11T18:20:00+08:00","actor":"design","type":"progress","summary":"仍在执行中，等待补齐成图。"}]},{"id":"xhs-cookie-refresh","title":"小红书 cookie 重新登录","owner":"worker","collaborators":["builder"],"priority":"P0","stage":"blocked","substatus":"扫码前无法恢复发布链路","category":"ops","summary":"当前主要影响小红书发布和相关自动化能力。","goal":"恢复小红书链路可用性，解除后续发布任务的系统阻塞。","nextAction":"BuilderDong 到机器前扫码登录一次，小红书链路即可继续。","needsBuilder":true,"builderAction":"扫码登录小红书","blocked":true,"blocker":"需要 BuilderDong 在本机扫码登录","updatedAt":"2026-03-11T17:50:00+08:00","createdAt":"2026-03-02T20:00:00+08:00","archived":false,"sourceRefs":["TODO.md"],"tags":["cookie","xhs"],"history":[{"at":"2026-03-02T20:00:00+08:00","actor":"worker","type":"incident","summary":"发现小红书 cookie 过期，发布能力失效。"},{"at":"2026-03-09T11:20:00+08:00","actor":"main","type":"status","summary":"确认阻塞原因是必须人工扫码。"},{"at":"2026-03-11T17:50:00+08:00","actor":"main","type":"queue","summary":"加入待我处理清单。"}]},{"id":"x-cookie-refresh","title":"X / xreach cookie 刷新","owner":"worker","collaborators":["builder"],"priority":"P0","stage":"blocked","substatus":"账号未重新登录前无法稳定抓取","category":"ops","summary":"影响 Twitter/X 数据抓取与 KOL 监控。","goal":"恢复 X 侧抓取稳定性，避免监控与推广链路断档。","nextAction":"BuilderDong 在 Chrome 登录 X，完成 cookie 刷新。","needsBuilder":true,"builderAction":"在 Chrome 登录 X","blocked":true,"blocker":"需要 BuilderDong 在本机登录 X","updatedAt":"2026-03-11T17:40:00+08:00","createdAt":"2026-03-03T09:00:00+08:00","archived":false,"sourceRefs":["TODO.md"],"tags":["cookie","x","monitoring"],"history":[{"at":"2026-03-03T09:00:00+08:00","actor":"worker","type":"incident","summary":"xreach 抓取稳定性下降，确认和 cookie 有关。"},{"at":"2026-03-10T20:45:00+08:00","actor":"main","type":"status","summary":"归类为 BuilderDong 亲自处理事项。"},{"at":"2026-03-11T17:40:00+08:00","actor":"main","type":"queue","summary":"继续保留在阻塞区。"}]},{"id":"xhs-generalization","title":"小红书抓取工具通用化改造","owner":"worker","collaborators":["research"],"priority":"P0","stage":"builder_queue","substatus":"方案已完成，待确认开工","category":"delivery","summary":"目标是支持“任意调研目标 → 自动拆关键词 → 迭代抓取 → 看板 / 报告输出”。","goal":"把单点抓取脚本升级为可复用调研流水线。","nextAction":"BuilderDong 确认是否按现方案直接开工。","needsBuilder":true,"builderAction":"确认开工","blocked":false,"blocker":"","updatedAt":"2026-03-11T19:10:00+08:00","createdAt":"2026-03-06T16:20:00+08:00","archived":false,"sourceRefs":["TODO.md","BOARD.md"],"tags":["xhs","crawler","pipeline"],"history":[{"at":"2026-03-06T16:20:00+08:00","actor":"research","type":"analysis","summary":"抽象了从选题到报告输出的通用流程。"},{"at":"2026-03-09T22:00:00+08:00","actor":"worker","type":"proposal","summary":"方案已出，可直接进入编码。"},{"at":"2026-03-11T19:10:00+08:00","actor":"main","type":"queue","summary":"等待 BuilderDong 拍板。"}]},{"id":"md2wx-cli","title":"安装 md2wx CLI 替代 Playwright 方案","owner":"worker","collaborators":["learning"],"priority":"P0","stage":"blocked","substatus":"工具评估完成，卡在公众号凭证","category":"ops","summary":"学习评估已经完成，工具本身值得装，当前缺 AppID 与 Secret。","goal":"降低公众号发布的浏览器依赖，换成更可维护的 CLI 链路。","nextAction":"补齐公众号 AppID + Secret 后执行安装与接入。","needsBuilder":true,"builderAction":"提供公众号 AppID / Secret","blocked":true,"blocker":"缺少公众号凭证","updatedAt":"2026-03-11T16:50:00+08:00","createdAt":"2026-03-04T11:00:00+08:00","archived":false,"sourceRefs":["TODO.md"],"tags":["wechat","cli","credentials"],"history":[{"at":"2026-03-04T11:00:00+08:00","actor":"learning","type":"analysis","summary":"评估确认 md2wx 比 Playwright 更适合长期维护。"},{"at":"2026-03-08T20:30:00+08:00","actor":"worker","type":"blocked","summary":"安装步骤核对完成，但凭证缺失无法继续。"},{"at":"2026-03-11T16:50:00+08:00","actor":"main","type":"queue","summary":"保留在阻塞区，待补凭证。"}]},{"id":"token-cost-reduction","title":"按审计结果收敛 MCP / Memory token 开销","owner":"main","collaborators":["research"],"priority":"P1","stage":"builder_queue","substatus":"执行路线清楚，等批量开始","category":"architecture","summary":"modelbox 分析、脚手架审计、上下文压缩方案都已完成，下一步是按方案裁剪。","goal":"直接减少主链路 token 消耗，稳住长期使用成本与速度。","nextAction":"和 MEMORY 主线一起定执行窗口，避免重复改两轮。","needsBuilder":true,"builderAction":"决定是否与 MEMORY 主线打包推进","blocked":false,"blocker":"","updatedAt":"2026-03-11T21:10:00+08:00","createdAt":"2026-03-01T10:00:00+08:00","archived":false,"sourceRefs":["TODO.md"],"tags":["token","mcp","performance"],"history":[{"at":"2026-03-01T10:00:00+08:00","actor":"research","type":"analysis","summary":"完成 token 开销热点拆解。"},{"at":"2026-03-07T15:00:00+08:00","actor":"main","type":"plan","summary":"形成执行清单，待和 MEMORY 主线合并推进。"},{"at":"2026-03-11T21:10:00+08:00","actor":"main","type":"queue","summary":"挪入待我处理区。"}]},{"id":"openapi-to-skills","title":"评估 openapi-to-skills 集成","owner":"research","collaborators":["main"],"priority":"P1","stage":"triage","substatus":"待正式立项","category":"research","summary":"目标是减少工具定义带来的 token 开销。","goal":"验证是否能用 schema 生成工具定义，减少手工维护与 token 噪音。","nextAction":"确认是否把它并入当前 token 优化批次。","needsBuilder":true,"builderAction":"确认是否立项","blocked":false,"blocker":"","updatedAt":"2026-03-11T14:00:00+08:00","createdAt":"2026-03-07T12:00:00+08:00","archived":false,"sourceRefs":["TODO.md"],"tags":["openapi","skills","research"],"history":[{"at":"2026-03-07T12:00:00+08:00","actor":"research","type":"idea","summary":"提出用 OpenAPI 自动生成 skills 的方向。"},{"at":"2026-03-10T09:00:00+08:00","actor":"main","type":"status","summary":"放入待分发列表，等待是否正式推进。"}]},{"id":"briefing-mail-automation","title":"每日简报和邮件处理自动化","owner":"research","collaborators":["main"],"priority":"P1","stage":"triage","substatus":"有方案，待审批后拆任务","category":"delivery","summary":"包括 cron + message 组合、简报（日程 / 邮件 / 天气 / CI）和邮件分类自动化。","goal":"把高频的日常例行事务收敛成稳定自动化。","nextAction":"BuilderDong 确定这条线是否进入本周排期。","needsBuilder":true,"builderAction":"确认排期","blocked":false,"blocker":"","updatedAt":"2026-03-11T13:50:00+08:00","createdAt":"2026-03-07T15:30:00+08:00","archived":false,"sourceRefs":["TODO.md"],"tags":["automation","briefing","mail"],"history":[{"at":"2026-03-07T15:30:00+08:00","actor":"research","type":"proposal","summary":"沉淀出 cron + message 的自动化组合方案。"},{"at":"2026-03-11T13:50:00+08:00","actor":"main","type":"status","summary":"等待 BuilderDong 决定要不要开。"}]},{"id":"video-prompt-plan","title":"视频 Prompt 测试方案待选","owner":"builder","collaborators":["design"],"priority":"P1","stage":"builder_queue","substatus":"65 条测试案例已备好，等拍板","category":"content","summary":"设计侧已有 65 条测试案例，等 BuilderDong 选择执行策略。","goal":"确定视频 Prompt 测试方法与样本覆盖范围。","nextAction":"BuilderDong 选择测试策略（快速验证 / 全量跑 / 分阶段跑）。","needsBuilder":true,"builderAction":"选择测试策略","blocked":false,"blocker":"","updatedAt":"2026-03-11T12:40:00+08:00","createdAt":"2026-03-08T18:00:00+08:00","archived":false,"sourceRefs":["TODO.md"],"tags":["prompt","video","decision"],"history":[{"at":"2026-03-08T18:00:00+08:00","actor":"design","type":"prep","summary":"整理出 65 条视频 Prompt 测试案例。"},{"at":"2026-03-11T12:40:00+08:00","actor":"main","type":"queue","summary":"转为明确的待我处理决策项。"}]},{"id":"cron-fallback-model","title":"配置 cron fallback 模型","owner":"main","collaborators":[],"priority":"P1","stage":"dispatched","substatus":"问题清楚，待做具体方案","category":"ops","summary":"避免主模型异常时定时任务整批失败。","goal":"让 cron 任务在主模型波动时仍能保底运行。","nextAction":"整理当前 cron 入口与模型覆盖策略，再下发实现。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","updatedAt":"2026-03-11T11:20:00+08:00","createdAt":"2026-03-09T08:30:00+08:00","archived":false,"sourceRefs":["TODO.md"],"tags":["cron","fallback","models"],"history":[{"at":"2026-03-09T08:30:00+08:00","actor":"main","type":"idea","summary":"提出 cron fallback 模型需求。"},{"at":"2026-03-11T11:20:00+08:00","actor":"main","type":"dispatch","summary":"进入已分发状态，待具体方案。"}]},{"id":"imessage-full-disk","title":"iMessage Full Disk Access 权限","owner":"builder","collaborators":["main"],"priority":"P1","stage":"blocked","substatus":"系统权限未授权","category":"ops","summary":"持续报 permissionDenied(chat.db)。","goal":"恢复 iMessage / SMS 相关链路的数据库访问能力。","nextAction":"BuilderDong 到系统设置里为 Messages 相关进程开放 Full Disk Access。","needsBuilder":true,"builderAction":"系统设置授权","blocked":true,"blocker":"需要人工在 macOS 系统设置中授权","updatedAt":"2026-03-11T10:50:00+08:00","createdAt":"2026-03-05T09:20:00+08:00","archived":false,"sourceRefs":["TODO.md"],"tags":["imessage","permissions"],"history":[{"at":"2026-03-05T09:20:00+08:00","actor":"main","type":"incident","summary":"调用 iMessage 数据库时报 permissionDenied(chat.db)。"},{"at":"2026-03-11T10:50:00+08:00","actor":"main","type":"queue","summary":"明确为 BuilderDong 的系统权限动作。"}]},{"id":"latent-space-source","title":"订阅 Latent.Space 作为 AI 信息源","owner":"research","collaborators":[],"priority":"P3","stage":"triage","substatus":"待开始","category":"research","summary":"AI 顶级日更聚合（swyx），建议接入新闻系统。","goal":"补强 AI 信息源池，提高日报素材密度。","nextAction":"确认是否先做轻量订阅接入还是直接纳入新闻系统。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","updatedAt":"2026-03-10T21:00:00+08:00","createdAt":"2026-03-06T20:10:00+08:00","archived":false,"sourceRefs":["TODO.md"],"tags":["news","source"],"history":[{"at":"2026-03-06T20:10:00+08:00","actor":"research","type":"idea","summary":"提出 Latent.Space 作为新增信源。"},{"at":"2026-03-10T21:00:00+08:00","actor":"main","type":"backlog","summary":"保留在长期关注。"}]},{"id":"seedance-knowledge","title":"Seedance 知识库持续完善","owner":"research","collaborators":["learning"],"priority":"P3","stage":"executing","substatus":"首批整理已完成，继续补充来源","category":"research","summary":"首批 17 网站 + 10 博主已整理，仍在滚动补充。","goal":"把 Seedance 相关知识沉淀成可复用资料库。","nextAction":"按来源重要性补齐新增资源，并整理索引。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","updatedAt":"2026-03-10T19:20:00+08:00","createdAt":"2026-02-28T15:00:00+08:00","archived":false,"sourceRefs":["TODO.md","BOARD.md"],"tags":["seedance","knowledge-base"],"history":[{"at":"2026-02-28T15:00:00+08:00","actor":"research","type":"progress","summary":"完成第一轮 Seedance 资源汇总。"},{"at":"2026-03-10T19:20:00+08:00","actor":"learning","type":"progress","summary":"继续补充知识库，维持执行中。"}]},{"id":"agent-browser-watch","title":"agent-browser 长期关注","owner":"research","collaborators":["main"],"priority":"P3","stage":"acked","substatus":"进入观察队列，等 Diffing 能力补齐再评估","category":"research","summary":"等 OpenClaw Browser 补齐 Diffing 再评估。","goal":"持续跟踪 agent-browser 的成熟度，避免过早接入。","nextAction":"下一次版本有关键进展时再重启评估。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","updatedAt":"2026-03-10T18:00:00+08:00","createdAt":"2026-02-28T17:40:00+08:00","archived":false,"sourceRefs":["TODO.md"],"tags":["browser","watchlist"],"history":[{"at":"2026-02-28T17:40:00+08:00","actor":"research","type":"analysis","summary":"初步评估 agent-browser，结论是不急。"},{"at":"2026-03-10T18:00:00+08:00","actor":"main","type":"ack","summary":"转为长期观察任务，不再频繁打扰主线。"}]},{"id":"single-status-message","title":"协作大厅单条状态消息机制","owner":"main","collaborators":[],"priority":"P1","stage":"review","substatus":"链路修复已落盘，完整机制仍待收口","category":"architecture","summary":"BuilderDong 明确偏向“单条状态消息机制”，当前已有 typing 与 transcript 去重补丁，但还不是完整机制。","goal":"让每个任务只维护一条状态消息，用户随时能看到 queued / running / completed 等状态。","nextAction":"在现有修复基础上继续补齐完整状态机与 edit-only 链路。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","updatedAt":"2026-03-12T00:20:00+08:00","createdAt":"2026-03-11T23:40:00+08:00","archived":false,"sourceRefs":["memory/2026-03-12.md"],"tags":["discord","status","ux"],"history":[{"at":"2026-03-11T23:40:00+08:00","actor":"main","type":"decision","summary":"BuilderDong 明确采用单条状态消息机制方向。"},{"at":"2026-03-12T00:05:00+08:00","actor":"main","type":"progress","summary":"已补 typing 生命周期续命与 queued followup transcript 去重。"},{"at":"2026-03-12T00:20:00+08:00","actor":"main","type":"review","summary":"当前成果可视为“链路修复”，完整机制还差最后一段。"}]},{"id":"gateway-patch-regression","title":"Gateway 重启并回归补丁加载结果","owner":"main","collaborators":[],"priority":"P1","stage":"review","substatus":"补丁已落盘，live 进程尚未加载","category":"ops","summary":"~/.openclaw/lib/... 里的补丁语法检查通过，但 live Gateway 仍在跑旧进程。","goal":"重启 Gateway 后完成真实回归验证，确认线上行为与本地补丁一致。","nextAction":"安排重启窗口，然后验证 typing 与 transcript 修复是否在线生效。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","updatedAt":"2026-03-12T00:25:00+08:00","createdAt":"2026-03-11T23:50:00+08:00","archived":false,"sourceRefs":["memory/2026-03-12.md"],"tags":["gateway","regression","ops"],"history":[{"at":"2026-03-11T23:50:00+08:00","actor":"main","type":"progress","summary":"确认补丁文件已写入 ~/.openclaw/lib/...。"},{"at":"2026-03-12T00:10:00+08:00","actor":"main","type":"inspection","summary":"发现 live Gateway 启动时间早于补丁写入时间，说明尚未加载。"},{"at":"2026-03-12T00:25:00+08:00","actor":"main","type":"review","summary":"进入待回归阶段。"}]},{"id":"ai-news-monitor","title":"AI 新闻监控上线","owner":"main","collaborators":["research"],"priority":"P1","stage":"done","substatus":"上线完成","category":"delivery","summary":"HN 首页筛选 → 情报站，每 4 小时运行。","goal":"建立稳定的 AI 新闻监听。","nextAction":"继续运行，无需额外动作。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-02-28T22:10:00+08:00","createdAt":"2026-02-27T19:00:00+08:00","doneAt":"2026-02-28T22:10:00+08:00","archivedReason":"上线已完成，转入常规运行。","sourceRefs":["BOARD.html"],"tags":["news","monitoring"],"history":[{"at":"2026-02-27T19:00:00+08:00","actor":"research","type":"build","summary":"情报站方案敲定。"},{"at":"2026-02-28T22:10:00+08:00","actor":"main","type":"done","summary":"AI 新闻监控正式上线。"}]},{"id":"opennews-opentwitter-install","title":"opennews-mcp + opentwitter-mcp 安装","owner":"main","collaborators":[],"priority":"P1","stage":"done","substatus":"安装与 token 配置完成","category":"ops","summary":"ClawHub 安装 + Token 配置完成。","goal":"扩充 X / Crypto 数据能力。","nextAction":"按需使用。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-02-28T20:30:00+08:00","createdAt":"2026-02-28T18:30:00+08:00","doneAt":"2026-02-28T20:30:00+08:00","archivedReason":"环境已经可用。","sourceRefs":["BOARD.html"],"tags":["mcp","install"],"history":[{"at":"2026-02-28T18:30:00+08:00","actor":"main","type":"setup","summary":"通过 ClawHub 拉取两个技能。"},{"at":"2026-02-28T20:30:00+08:00","actor":"main","type":"done","summary":"安装与 token 配置完成。"}]},{"id":"git-large-file-cleanup","title":"Git 大文件清理","owner":"main","collaborators":[],"priority":"P1","stage":"done","substatus":"历史瘦身完成","category":"ops","summary":"100MB 视频从历史中清除。","goal":"让仓库恢复可推送、可同步。","nextAction":"无。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-02-28T19:10:00+08:00","createdAt":"2026-02-28T17:40:00+08:00","doneAt":"2026-02-28T19:10:00+08:00","archivedReason":"仓库体积问题已解决。","sourceRefs":["BOARD.html"],"tags":["git","cleanup"],"history":[{"at":"2026-02-28T17:40:00+08:00","actor":"main","type":"incident","summary":"发现大文件导致 git 历史异常。"},{"at":"2026-02-28T19:10:00+08:00","actor":"main","type":"done","summary":"完成历史清理。"}]},{"id":"agent-browser-research","title":"agent-browser.dev 调研","owner":"research","collaborators":[],"priority":"P2","stage":"done","substatus":"阶段性结论已出","category":"research","summary":"结论：可选装，不急需。","goal":"判断是否值得引入。","nextAction":"等待产品成熟后再看。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-02-28T18:20:00+08:00","createdAt":"2026-02-27T16:00:00+08:00","doneAt":"2026-02-28T18:20:00+08:00","archivedReason":"目前只需观察，无需持续占用活动面板。","sourceRefs":["BOARD.html"],"tags":["browser","research"],"history":[{"at":"2026-02-27T16:00:00+08:00","actor":"research","type":"analysis","summary":"完成初轮调研。"},{"at":"2026-02-28T18:20:00+08:00","actor":"research","type":"done","summary":"给出“可选装不急需”的结论。"}]},{"id":"seedance-roundup","title":"Seedance 资源汇总","owner":"research","collaborators":[],"priority":"P2","stage":"done","substatus":"首轮汇总完成","category":"research","summary":"17 网站 + 10 博主。","goal":"形成 Seedance 资料入口。","nextAction":"后续作为持续完善任务继续滚动补充。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-02-28T18:15:00+08:00","createdAt":"2026-02-27T18:00:00+08:00","doneAt":"2026-02-28T18:15:00+08:00","archivedReason":"首轮交付完成，转为常规维护。","sourceRefs":["BOARD.html"],"tags":["seedance","research"],"history":[{"at":"2026-02-27T18:00:00+08:00","actor":"research","type":"collect","summary":"开始拉取 Seedance 来源。"},{"at":"2026-02-28T18:15:00+08:00","actor":"research","type":"done","summary":"完成首轮汇总。"}]},{"id":"md2wechat-study","title":"md2wechat CLI 学习评估","owner":"learning","collaborators":[],"priority":"P2","stage":"done","substatus":"已给出建议","category":"research","summary":"强烈推荐替代 Playwright。","goal":"判断公众号发布链路是否应切换。","nextAction":"等待凭证后再进入安装任务。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-02-28T16:50:00+08:00","createdAt":"2026-02-28T11:00:00+08:00","doneAt":"2026-02-28T16:50:00+08:00","archivedReason":"学习结论已经沉淀，后续转入安装任务。","sourceRefs":["BOARD.html"],"tags":["wechat","cli"],"history":[{"at":"2026-02-28T11:00:00+08:00","actor":"learning","type":"study","summary":"开始分析 md2wechat CLI。"},{"at":"2026-02-28T16:50:00+08:00","actor":"learning","type":"done","summary":"输出“强烈推荐替代 Playwright”的结论。"}]},{"id":"allowbots-whitelist","title":"allowBots + users 白名单","owner":"main","collaborators":[],"priority":"P1","stage":"done","substatus":"配置完成","category":"architecture","summary":"bot 互通已开启。","goal":"打通 bot 之间的正常协作。","nextAction":"无。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-02-28T15:30:00+08:00","createdAt":"2026-02-28T14:20:00+08:00","doneAt":"2026-02-28T15:30:00+08:00","archivedReason":"配置稳定运行中。","sourceRefs":["BOARD.html"],"tags":["discord","config"],"history":[{"at":"2026-02-28T14:20:00+08:00","actor":"main","type":"setup","summary":"调整 allowBots 与 users 白名单。"},{"at":"2026-02-28T15:30:00+08:00","actor":"main","type":"done","summary":"完成配置。"}]},{"id":"opus-timeout-fix","title":"Opus 超时修复","owner":"main","collaborators":[],"priority":"P1","stage":"done","substatus":"CRS v1.1.286 已修复","category":"architecture","summary":"超时问题修复完成。","goal":"恢复模型调用稳定性。","nextAction":"无。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-02-28T15:10:00+08:00","createdAt":"2026-02-27T23:00:00+08:00","doneAt":"2026-02-28T15:10:00+08:00","archivedReason":"已修复，不再占活动位。","sourceRefs":["BOARD.html"],"tags":["model","timeout"],"history":[{"at":"2026-02-27T23:00:00+08:00","actor":"main","type":"incident","summary":"追查 Opus 超时问题。"},{"at":"2026-02-28T15:10:00+08:00","actor":"main","type":"done","summary":"CRS v1.1.286 修复完成。"}]},{"id":"todo-board-init","title":"TODO / 看板机制建立","owner":"main","collaborators":[],"priority":"P1","stage":"done","substatus":"第一版机制已上线","category":"delivery","summary":"本文件 + 置顶消息机制建立。","goal":"给团队任务提供统一展示入口。","nextAction":"升级为新的 authoritative task store。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-02-28T14:00:00+08:00","createdAt":"2026-02-28T09:00:00+08:00","doneAt":"2026-02-28T14:00:00+08:00","archivedReason":"第一版完成，现进入 2.0 升级。","sourceRefs":["BOARD.html"],"tags":["board","todo"],"history":[{"at":"2026-02-28T09:00:00+08:00","actor":"main","type":"build","summary":"开始搭建 TODO / Board 展示机制。"},{"at":"2026-02-28T14:00:00+08:00","actor":"main","type":"done","summary":"第一版看板正式可用。"}]},{"id":"codex-oauth-rollout","title":"OpenAI Codex OAuth + GPT-5.4 全 agent 配置","owner":"main","collaborators":[],"priority":"P1","stage":"done","substatus":"模型配置收敛完成","category":"ops","summary":"所有 agents 显式配置为 openai-codex/gpt-5.4。","goal":"统一模型链路。","nextAction":"常规使用。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-03-11T18:30:00+08:00","createdAt":"2026-03-11T09:00:00+08:00","doneAt":"2026-03-11T18:30:00+08:00","archivedReason":"配置已收敛。","sourceRefs":["memory/2026-03-11.md"],"tags":["codex","oauth","models"],"history":[{"at":"2026-03-11T09:00:00+08:00","actor":"main","type":"setup","summary":"完成 OpenAI Codex OAuth 登录。"},{"at":"2026-03-11T18:30:00+08:00","actor":"main","type":"done","summary":"全 agent 模型统一为 gpt-5.4。"}]},{"id":"model-cleanup","title":"冗余模型清理","owner":"main","collaborators":[],"priority":"P2","stage":"done","substatus":"仅保留 3 条主模型链路","category":"ops","summary":"仅保留 GPT-5.4 / Opus / MiniMax M2.5。","goal":"降低配置噪音。","nextAction":"无。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-03-11T18:50:00+08:00","createdAt":"2026-03-11T10:30:00+08:00","doneAt":"2026-03-11T18:50:00+08:00","archivedReason":"模型配置已经清爽。","sourceRefs":["memory/2026-03-11.md"],"tags":["models","cleanup"],"history":[{"at":"2026-03-11T10:30:00+08:00","actor":"main","type":"cleanup","summary":"移除 bailian / glm-5 等冗余模型。"},{"at":"2026-03-11T18:50:00+08:00","actor":"main","type":"done","summary":"保留 3 条主模型链路。"}]},{"id":"xhs-dashboard-deploy","title":"小红书 Dashboard 部署","owner":"main","collaborators":["worker"],"priority":"P2","stage":"done","substatus":"部署完成","category":"delivery","summary":"Dashboard 更新部署完成。","goal":"让小红书侧有更稳定的展示与运营入口。","nextAction":"后续迭代再开新任务。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-03-11T17:20:00+08:00","createdAt":"2026-03-10T16:00:00+08:00","doneAt":"2026-03-11T17:20:00+08:00","archivedReason":"部署已完成。","sourceRefs":["TODO.md"],"tags":["xhs","dashboard"],"history":[{"at":"2026-03-10T16:00:00+08:00","actor":"worker","type":"deploy","summary":"开始部署 dashboard 更新。"},{"at":"2026-03-11T17:20:00+08:00","actor":"main","type":"done","summary":"部署完成。"}]},{"id":"qmd-install","title":"QMD 安装 + 集成验证","owner":"main","collaborators":[],"priority":"P2","stage":"done","substatus":"安装与索引测试完成","category":"ops","summary":"QMD 安装、索引测试与 OpenClaw memory 集成完成。","goal":"验证 QMD 可用于知识管理链路。","nextAction":"按需继续使用。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-03-10T18:20:00+08:00","createdAt":"2026-03-09T16:00:00+08:00","doneAt":"2026-03-10T18:20:00+08:00","archivedReason":"验证任务已结束。","sourceRefs":["TODO.md"],"tags":["qmd","integration"],"history":[{"at":"2026-03-09T16:00:00+08:00","actor":"main","type":"setup","summary":"开始安装和索引测试。"},{"at":"2026-03-10T18:20:00+08:00","actor":"main","type":"done","summary":"QMD 集成验证完成。"}]},{"id":"agentshield-audit","title":"agentshield 安全审计","owner":"research","collaborators":["main"],"priority":"P2","stage":"done","substatus":"审计结论已归档","category":"architecture","summary":"安全审计完成，结论已沉淀。","goal":"掌握系统安全边界与修复优先级。","nextAction":"如需执行再开新的修复任务。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-03-09T12:30:00+08:00","createdAt":"2026-03-08T20:00:00+08:00","doneAt":"2026-03-09T12:30:00+08:00","archivedReason":"审计已完成，执行动作另开任务。","sourceRefs":["TODO.md"],"tags":["security","audit"],"history":[{"at":"2026-03-08T20:00:00+08:00","actor":"research","type":"audit","summary":"启动 agentshield 安全审计。"},{"at":"2026-03-09T12:30:00+08:00","actor":"research","type":"done","summary":"输出安全审计结论。"}]}],"summary":{"activeCount":17,"archivedCount":14,"builderCount":10,"blockedCount":4,"executingCount":2,"reviewCount":2,"stageCounts":{"triage":3,"dispatched":1,"acked":1,"executing":2,"builder_queue":4,"review":2,"blocked":4,"done":0},"priorityCounts":{"P0":6,"P1":8,"P2":0,"P3":3},"ownerCounts":{"builder":2,"main":5,"research":5,"learning":0,"design":1,"worker":4,"summary":0},"categoryCounts":{"architecture":3,"delivery":2,"research":4,"content":2,"ops":6}},"builderQueue":[{"id":"memory-compaction","title":"MEMORY.md 瘦身 + 上下文压缩方案落地","owner":"main","collaborators":["research"],"priority":"P0","stage":"builder_queue","substatus":"方案已齐，等拍板执行范围","category":"architecture","summary":"前期调研、token 分析、脚手架审计都已完成，现在缺执行落地。","goal":"让长期记忆与上下文工程真正减 token，而不是继续靠人工忍耐。","nextAction":"BuilderDong 确认先做 MEMORY 瘦身还是先做上下文压缩链路。","needsBuilder":true,"builderAction":"拍板执行范围与优先顺序","blocked":false,"blocker":"","updatedAt":"2026-03-11T21:30:00+08:00","createdAt":"2026-02-28T09:30:00+08:00","archived":false,"sourceRefs":["TODO.md","BOARD.md"],"tags":["memory","token","context-engineering"],"history":[{"at":"2026-02-28T10:20:00+08:00","actor":"research","type":"analysis","summary":"modelbox 与脚手架审计完成，问题定位到 memory 和系统提示词冗余。"},{"at":"2026-03-09T18:40:00+08:00","actor":"main","type":"plan","summary":"上下文压缩方案收敛，待进入执行。"},{"at":"2026-03-11T21:30:00+08:00","actor":"main","type":"status","summary":"并入待我处理队列，等 BuilderDong 拍板。"}]},{"id":"xhs-generalization","title":"小红书抓取工具通用化改造","owner":"worker","collaborators":["research"],"priority":"P0","stage":"builder_queue","substatus":"方案已完成，待确认开工","category":"delivery","summary":"目标是支持“任意调研目标 → 自动拆关键词 → 迭代抓取 → 看板 / 报告输出”。","goal":"把单点抓取脚本升级为可复用调研流水线。","nextAction":"BuilderDong 确认是否按现方案直接开工。","needsBuilder":true,"builderAction":"确认开工","blocked":false,"blocker":"","updatedAt":"2026-03-11T19:10:00+08:00","createdAt":"2026-03-06T16:20:00+08:00","archived":false,"sourceRefs":["TODO.md","BOARD.md"],"tags":["xhs","crawler","pipeline"],"history":[{"at":"2026-03-06T16:20:00+08:00","actor":"research","type":"analysis","summary":"抽象了从选题到报告输出的通用流程。"},{"at":"2026-03-09T22:00:00+08:00","actor":"worker","type":"proposal","summary":"方案已出，可直接进入编码。"},{"at":"2026-03-11T19:10:00+08:00","actor":"main","type":"queue","summary":"等待 BuilderDong 拍板。"}]},{"id":"xhs-cookie-refresh","title":"小红书 cookie 重新登录","owner":"worker","collaborators":["builder"],"priority":"P0","stage":"blocked","substatus":"扫码前无法恢复发布链路","category":"ops","summary":"当前主要影响小红书发布和相关自动化能力。","goal":"恢复小红书链路可用性，解除后续发布任务的系统阻塞。","nextAction":"BuilderDong 到机器前扫码登录一次，小红书链路即可继续。","needsBuilder":true,"builderAction":"扫码登录小红书","blocked":true,"blocker":"需要 BuilderDong 在本机扫码登录","updatedAt":"2026-03-11T17:50:00+08:00","createdAt":"2026-03-02T20:00:00+08:00","archived":false,"sourceRefs":["TODO.md"],"tags":["cookie","xhs"],"history":[{"at":"2026-03-02T20:00:00+08:00","actor":"worker","type":"incident","summary":"发现小红书 cookie 过期，发布能力失效。"},{"at":"2026-03-09T11:20:00+08:00","actor":"main","type":"status","summary":"确认阻塞原因是必须人工扫码。"},{"at":"2026-03-11T17:50:00+08:00","actor":"main","type":"queue","summary":"加入待我处理清单。"}]},{"id":"x-cookie-refresh","title":"X / xreach cookie 刷新","owner":"worker","collaborators":["builder"],"priority":"P0","stage":"blocked","substatus":"账号未重新登录前无法稳定抓取","category":"ops","summary":"影响 Twitter/X 数据抓取与 KOL 监控。","goal":"恢复 X 侧抓取稳定性，避免监控与推广链路断档。","nextAction":"BuilderDong 在 Chrome 登录 X，完成 cookie 刷新。","needsBuilder":true,"builderAction":"在 Chrome 登录 X","blocked":true,"blocker":"需要 BuilderDong 在本机登录 X","updatedAt":"2026-03-11T17:40:00+08:00","createdAt":"2026-03-03T09:00:00+08:00","archived":false,"sourceRefs":["TODO.md"],"tags":["cookie","x","monitoring"],"history":[{"at":"2026-03-03T09:00:00+08:00","actor":"worker","type":"incident","summary":"xreach 抓取稳定性下降，确认和 cookie 有关。"},{"at":"2026-03-10T20:45:00+08:00","actor":"main","type":"status","summary":"归类为 BuilderDong 亲自处理事项。"},{"at":"2026-03-11T17:40:00+08:00","actor":"main","type":"queue","summary":"继续保留在阻塞区。"}]},{"id":"md2wx-cli","title":"安装 md2wx CLI 替代 Playwright 方案","owner":"worker","collaborators":["learning"],"priority":"P0","stage":"blocked","substatus":"工具评估完成，卡在公众号凭证","category":"ops","summary":"学习评估已经完成，工具本身值得装，当前缺 AppID 与 Secret。","goal":"降低公众号发布的浏览器依赖，换成更可维护的 CLI 链路。","nextAction":"补齐公众号 AppID + Secret 后执行安装与接入。","needsBuilder":true,"builderAction":"提供公众号 AppID / Secret","blocked":true,"blocker":"缺少公众号凭证","updatedAt":"2026-03-11T16:50:00+08:00","createdAt":"2026-03-04T11:00:00+08:00","archived":false,"sourceRefs":["TODO.md"],"tags":["wechat","cli","credentials"],"history":[{"at":"2026-03-04T11:00:00+08:00","actor":"learning","type":"analysis","summary":"评估确认 md2wx 比 Playwright 更适合长期维护。"},{"at":"2026-03-08T20:30:00+08:00","actor":"worker","type":"blocked","summary":"安装步骤核对完成，但凭证缺失无法继续。"},{"at":"2026-03-11T16:50:00+08:00","actor":"main","type":"queue","summary":"保留在阻塞区，待补凭证。"}]},{"id":"openapi-to-skills","title":"评估 openapi-to-skills 集成","owner":"research","collaborators":["main"],"priority":"P1","stage":"triage","substatus":"待正式立项","category":"research","summary":"目标是减少工具定义带来的 token 开销。","goal":"验证是否能用 schema 生成工具定义，减少手工维护与 token 噪音。","nextAction":"确认是否把它并入当前 token 优化批次。","needsBuilder":true,"builderAction":"确认是否立项","blocked":false,"blocker":"","updatedAt":"2026-03-11T14:00:00+08:00","createdAt":"2026-03-07T12:00:00+08:00","archived":false,"sourceRefs":["TODO.md"],"tags":["openapi","skills","research"],"history":[{"at":"2026-03-07T12:00:00+08:00","actor":"research","type":"idea","summary":"提出用 OpenAPI 自动生成 skills 的方向。"},{"at":"2026-03-10T09:00:00+08:00","actor":"main","type":"status","summary":"放入待分发列表，等待是否正式推进。"}]},{"id":"briefing-mail-automation","title":"每日简报和邮件处理自动化","owner":"research","collaborators":["main"],"priority":"P1","stage":"triage","substatus":"有方案，待审批后拆任务","category":"delivery","summary":"包括 cron + message 组合、简报（日程 / 邮件 / 天气 / CI）和邮件分类自动化。","goal":"把高频的日常例行事务收敛成稳定自动化。","nextAction":"BuilderDong 确定这条线是否进入本周排期。","needsBuilder":true,"builderAction":"确认排期","blocked":false,"blocker":"","updatedAt":"2026-03-11T13:50:00+08:00","createdAt":"2026-03-07T15:30:00+08:00","archived":false,"sourceRefs":["TODO.md"],"tags":["automation","briefing","mail"],"history":[{"at":"2026-03-07T15:30:00+08:00","actor":"research","type":"proposal","summary":"沉淀出 cron + message 的自动化组合方案。"},{"at":"2026-03-11T13:50:00+08:00","actor":"main","type":"status","summary":"等待 BuilderDong 决定要不要开。"}]},{"id":"token-cost-reduction","title":"按审计结果收敛 MCP / Memory token 开销","owner":"main","collaborators":["research"],"priority":"P1","stage":"builder_queue","substatus":"执行路线清楚，等批量开始","category":"architecture","summary":"modelbox 分析、脚手架审计、上下文压缩方案都已完成，下一步是按方案裁剪。","goal":"直接减少主链路 token 消耗，稳住长期使用成本与速度。","nextAction":"和 MEMORY 主线一起定执行窗口，避免重复改两轮。","needsBuilder":true,"builderAction":"决定是否与 MEMORY 主线打包推进","blocked":false,"blocker":"","updatedAt":"2026-03-11T21:10:00+08:00","createdAt":"2026-03-01T10:00:00+08:00","archived":false,"sourceRefs":["TODO.md"],"tags":["token","mcp","performance"],"history":[{"at":"2026-03-01T10:00:00+08:00","actor":"research","type":"analysis","summary":"完成 token 开销热点拆解。"},{"at":"2026-03-07T15:00:00+08:00","actor":"main","type":"plan","summary":"形成执行清单，待和 MEMORY 主线合并推进。"},{"at":"2026-03-11T21:10:00+08:00","actor":"main","type":"queue","summary":"挪入待我处理区。"}]},{"id":"video-prompt-plan","title":"视频 Prompt 测试方案待选","owner":"builder","collaborators":["design"],"priority":"P1","stage":"builder_queue","substatus":"65 条测试案例已备好，等拍板","category":"content","summary":"设计侧已有 65 条测试案例，等 BuilderDong 选择执行策略。","goal":"确定视频 Prompt 测试方法与样本覆盖范围。","nextAction":"BuilderDong 选择测试策略（快速验证 / 全量跑 / 分阶段跑）。","needsBuilder":true,"builderAction":"选择测试策略","blocked":false,"blocker":"","updatedAt":"2026-03-11T12:40:00+08:00","createdAt":"2026-03-08T18:00:00+08:00","archived":false,"sourceRefs":["TODO.md"],"tags":["prompt","video","decision"],"history":[{"at":"2026-03-08T18:00:00+08:00","actor":"design","type":"prep","summary":"整理出 65 条视频 Prompt 测试案例。"},{"at":"2026-03-11T12:40:00+08:00","actor":"main","type":"queue","summary":"转为明确的待我处理决策项。"}]},{"id":"imessage-full-disk","title":"iMessage Full Disk Access 权限","owner":"builder","collaborators":["main"],"priority":"P1","stage":"blocked","substatus":"系统权限未授权","category":"ops","summary":"持续报 permissionDenied(chat.db)。","goal":"恢复 iMessage / SMS 相关链路的数据库访问能力。","nextAction":"BuilderDong 到系统设置里为 Messages 相关进程开放 Full Disk Access。","needsBuilder":true,"builderAction":"系统设置授权","blocked":true,"blocker":"需要人工在 macOS 系统设置中授权","updatedAt":"2026-03-11T10:50:00+08:00","createdAt":"2026-03-05T09:20:00+08:00","archived":false,"sourceRefs":["TODO.md"],"tags":["imessage","permissions"],"history":[{"at":"2026-03-05T09:20:00+08:00","actor":"main","type":"incident","summary":"调用 iMessage 数据库时报 permissionDenied(chat.db)。"},{"at":"2026-03-11T10:50:00+08:00","actor":"main","type":"queue","summary":"明确为 BuilderDong 的系统权限动作。"}]}],"blockedTasks":[{"id":"xhs-cookie-refresh","title":"小红书 cookie 重新登录","owner":"worker","collaborators":["builder"],"priority":"P0","stage":"blocked","substatus":"扫码前无法恢复发布链路","category":"ops","summary":"当前主要影响小红书发布和相关自动化能力。","goal":"恢复小红书链路可用性，解除后续发布任务的系统阻塞。","nextAction":"BuilderDong 到机器前扫码登录一次，小红书链路即可继续。","needsBuilder":true,"builderAction":"扫码登录小红书","blocked":true,"blocker":"需要 BuilderDong 在本机扫码登录","updatedAt":"2026-03-11T17:50:00+08:00","createdAt":"2026-03-02T20:00:00+08:00","archived":false,"sourceRefs":["TODO.md"],"tags":["cookie","xhs"],"history":[{"at":"2026-03-02T20:00:00+08:00","actor":"worker","type":"incident","summary":"发现小红书 cookie 过期，发布能力失效。"},{"at":"2026-03-09T11:20:00+08:00","actor":"main","type":"status","summary":"确认阻塞原因是必须人工扫码。"},{"at":"2026-03-11T17:50:00+08:00","actor":"main","type":"queue","summary":"加入待我处理清单。"}]},{"id":"x-cookie-refresh","title":"X / xreach cookie 刷新","owner":"worker","collaborators":["builder"],"priority":"P0","stage":"blocked","substatus":"账号未重新登录前无法稳定抓取","category":"ops","summary":"影响 Twitter/X 数据抓取与 KOL 监控。","goal":"恢复 X 侧抓取稳定性，避免监控与推广链路断档。","nextAction":"BuilderDong 在 Chrome 登录 X，完成 cookie 刷新。","needsBuilder":true,"builderAction":"在 Chrome 登录 X","blocked":true,"blocker":"需要 BuilderDong 在本机登录 X","updatedAt":"2026-03-11T17:40:00+08:00","createdAt":"2026-03-03T09:00:00+08:00","archived":false,"sourceRefs":["TODO.md"],"tags":["cookie","x","monitoring"],"history":[{"at":"2026-03-03T09:00:00+08:00","actor":"worker","type":"incident","summary":"xreach 抓取稳定性下降，确认和 cookie 有关。"},{"at":"2026-03-10T20:45:00+08:00","actor":"main","type":"status","summary":"归类为 BuilderDong 亲自处理事项。"},{"at":"2026-03-11T17:40:00+08:00","actor":"main","type":"queue","summary":"继续保留在阻塞区。"}]},{"id":"md2wx-cli","title":"安装 md2wx CLI 替代 Playwright 方案","owner":"worker","collaborators":["learning"],"priority":"P0","stage":"blocked","substatus":"工具评估完成，卡在公众号凭证","category":"ops","summary":"学习评估已经完成，工具本身值得装，当前缺 AppID 与 Secret。","goal":"降低公众号发布的浏览器依赖，换成更可维护的 CLI 链路。","nextAction":"补齐公众号 AppID + Secret 后执行安装与接入。","needsBuilder":true,"builderAction":"提供公众号 AppID / Secret","blocked":true,"blocker":"缺少公众号凭证","updatedAt":"2026-03-11T16:50:00+08:00","createdAt":"2026-03-04T11:00:00+08:00","archived":false,"sourceRefs":["TODO.md"],"tags":["wechat","cli","credentials"],"history":[{"at":"2026-03-04T11:00:00+08:00","actor":"learning","type":"analysis","summary":"评估确认 md2wx 比 Playwright 更适合长期维护。"},{"at":"2026-03-08T20:30:00+08:00","actor":"worker","type":"blocked","summary":"安装步骤核对完成，但凭证缺失无法继续。"},{"at":"2026-03-11T16:50:00+08:00","actor":"main","type":"queue","summary":"保留在阻塞区，待补凭证。"}]},{"id":"imessage-full-disk","title":"iMessage Full Disk Access 权限","owner":"builder","collaborators":["main"],"priority":"P1","stage":"blocked","substatus":"系统权限未授权","category":"ops","summary":"持续报 permissionDenied(chat.db)。","goal":"恢复 iMessage / SMS 相关链路的数据库访问能力。","nextAction":"BuilderDong 到系统设置里为 Messages 相关进程开放 Full Disk Access。","needsBuilder":true,"builderAction":"系统设置授权","blocked":true,"blocker":"需要人工在 macOS 系统设置中授权","updatedAt":"2026-03-11T10:50:00+08:00","createdAt":"2026-03-05T09:20:00+08:00","archived":false,"sourceRefs":["TODO.md"],"tags":["imessage","permissions"],"history":[{"at":"2026-03-05T09:20:00+08:00","actor":"main","type":"incident","summary":"调用 iMessage 数据库时报 permissionDenied(chat.db)。"},{"at":"2026-03-11T10:50:00+08:00","actor":"main","type":"queue","summary":"明确为 BuilderDong 的系统权限动作。"}]}],"reviewTasks":[{"id":"gateway-patch-regression","title":"Gateway 重启并回归补丁加载结果","owner":"main","collaborators":[],"priority":"P1","stage":"review","substatus":"补丁已落盘，live 进程尚未加载","category":"ops","summary":"~/.openclaw/lib/... 里的补丁语法检查通过，但 live Gateway 仍在跑旧进程。","goal":"重启 Gateway 后完成真实回归验证，确认线上行为与本地补丁一致。","nextAction":"安排重启窗口，然后验证 typing 与 transcript 修复是否在线生效。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","updatedAt":"2026-03-12T00:25:00+08:00","createdAt":"2026-03-11T23:50:00+08:00","archived":false,"sourceRefs":["memory/2026-03-12.md"],"tags":["gateway","regression","ops"],"history":[{"at":"2026-03-11T23:50:00+08:00","actor":"main","type":"progress","summary":"确认补丁文件已写入 ~/.openclaw/lib/...。"},{"at":"2026-03-12T00:10:00+08:00","actor":"main","type":"inspection","summary":"发现 live Gateway 启动时间早于补丁写入时间，说明尚未加载。"},{"at":"2026-03-12T00:25:00+08:00","actor":"main","type":"review","summary":"进入待回归阶段。"}]},{"id":"single-status-message","title":"协作大厅单条状态消息机制","owner":"main","collaborators":[],"priority":"P1","stage":"review","substatus":"链路修复已落盘，完整机制仍待收口","category":"architecture","summary":"BuilderDong 明确偏向“单条状态消息机制”，当前已有 typing 与 transcript 去重补丁，但还不是完整机制。","goal":"让每个任务只维护一条状态消息，用户随时能看到 queued / running / completed 等状态。","nextAction":"在现有修复基础上继续补齐完整状态机与 edit-only 链路。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","updatedAt":"2026-03-12T00:20:00+08:00","createdAt":"2026-03-11T23:40:00+08:00","archived":false,"sourceRefs":["memory/2026-03-12.md"],"tags":["discord","status","ux"],"history":[{"at":"2026-03-11T23:40:00+08:00","actor":"main","type":"decision","summary":"BuilderDong 明确采用单条状态消息机制方向。"},{"at":"2026-03-12T00:05:00+08:00","actor":"main","type":"progress","summary":"已补 typing 生命周期续命与 queued followup transcript 去重。"},{"at":"2026-03-12T00:20:00+08:00","actor":"main","type":"review","summary":"当前成果可视为“链路修复”，完整机制还差最后一段。"}]}],"activeTasks":[{"id":"wechat-v3-illustration","title":"微信文章 v3 插画生成 + 发布","owner":"design","collaborators":["worker"],"priority":"P0","stage":"executing","substatus":"正文已好，当前卡在插画与最终发布","category":"content","summary":"文章主体已经准备好，只差插画与排版收尾。","goal":"把 v3 文章尽快变成可发布版本，不再长期悬而未决。","nextAction":"设计先补齐插画，再交给干活链路完成发布。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","updatedAt":"2026-03-11T18:20:00+08:00","createdAt":"2026-03-05T14:00:00+08:00","archived":false,"sourceRefs":["TODO.md","BOARD.md"],"tags":["wechat","content"],"history":[{"at":"2026-03-08T13:10:00+08:00","actor":"design","type":"progress","summary":"文章正文方案确认，进入视觉阶段。"},{"at":"2026-03-10T22:00:00+08:00","actor":"main","type":"status","summary":"明确仅剩插画与发布两步。"},{"at":"2026-03-11T18:20:00+08:00","actor":"design","type":"progress","summary":"仍在执行中，等待补齐成图。"}]},{"id":"memory-compaction","title":"MEMORY.md 瘦身 + 上下文压缩方案落地","owner":"main","collaborators":["research"],"priority":"P0","stage":"builder_queue","substatus":"方案已齐，等拍板执行范围","category":"architecture","summary":"前期调研、token 分析、脚手架审计都已完成，现在缺执行落地。","goal":"让长期记忆与上下文工程真正减 token，而不是继续靠人工忍耐。","nextAction":"BuilderDong 确认先做 MEMORY 瘦身还是先做上下文压缩链路。","needsBuilder":true,"builderAction":"拍板执行范围与优先顺序","blocked":false,"blocker":"","updatedAt":"2026-03-11T21:30:00+08:00","createdAt":"2026-02-28T09:30:00+08:00","archived":false,"sourceRefs":["TODO.md","BOARD.md"],"tags":["memory","token","context-engineering"],"history":[{"at":"2026-02-28T10:20:00+08:00","actor":"research","type":"analysis","summary":"modelbox 与脚手架审计完成，问题定位到 memory 和系统提示词冗余。"},{"at":"2026-03-09T18:40:00+08:00","actor":"main","type":"plan","summary":"上下文压缩方案收敛，待进入执行。"},{"at":"2026-03-11T21:30:00+08:00","actor":"main","type":"status","summary":"并入待我处理队列，等 BuilderDong 拍板。"}]},{"id":"xhs-generalization","title":"小红书抓取工具通用化改造","owner":"worker","collaborators":["research"],"priority":"P0","stage":"builder_queue","substatus":"方案已完成，待确认开工","category":"delivery","summary":"目标是支持“任意调研目标 → 自动拆关键词 → 迭代抓取 → 看板 / 报告输出”。","goal":"把单点抓取脚本升级为可复用调研流水线。","nextAction":"BuilderDong 确认是否按现方案直接开工。","needsBuilder":true,"builderAction":"确认开工","blocked":false,"blocker":"","updatedAt":"2026-03-11T19:10:00+08:00","createdAt":"2026-03-06T16:20:00+08:00","archived":false,"sourceRefs":["TODO.md","BOARD.md"],"tags":["xhs","crawler","pipeline"],"history":[{"at":"2026-03-06T16:20:00+08:00","actor":"research","type":"analysis","summary":"抽象了从选题到报告输出的通用流程。"},{"at":"2026-03-09T22:00:00+08:00","actor":"worker","type":"proposal","summary":"方案已出，可直接进入编码。"},{"at":"2026-03-11T19:10:00+08:00","actor":"main","type":"queue","summary":"等待 BuilderDong 拍板。"}]},{"id":"xhs-cookie-refresh","title":"小红书 cookie 重新登录","owner":"worker","collaborators":["builder"],"priority":"P0","stage":"blocked","substatus":"扫码前无法恢复发布链路","category":"ops","summary":"当前主要影响小红书发布和相关自动化能力。","goal":"恢复小红书链路可用性，解除后续发布任务的系统阻塞。","nextAction":"BuilderDong 到机器前扫码登录一次，小红书链路即可继续。","needsBuilder":true,"builderAction":"扫码登录小红书","blocked":true,"blocker":"需要 BuilderDong 在本机扫码登录","updatedAt":"2026-03-11T17:50:00+08:00","createdAt":"2026-03-02T20:00:00+08:00","archived":false,"sourceRefs":["TODO.md"],"tags":["cookie","xhs"],"history":[{"at":"2026-03-02T20:00:00+08:00","actor":"worker","type":"incident","summary":"发现小红书 cookie 过期，发布能力失效。"},{"at":"2026-03-09T11:20:00+08:00","actor":"main","type":"status","summary":"确认阻塞原因是必须人工扫码。"},{"at":"2026-03-11T17:50:00+08:00","actor":"main","type":"queue","summary":"加入待我处理清单。"}]},{"id":"x-cookie-refresh","title":"X / xreach cookie 刷新","owner":"worker","collaborators":["builder"],"priority":"P0","stage":"blocked","substatus":"账号未重新登录前无法稳定抓取","category":"ops","summary":"影响 Twitter/X 数据抓取与 KOL 监控。","goal":"恢复 X 侧抓取稳定性，避免监控与推广链路断档。","nextAction":"BuilderDong 在 Chrome 登录 X，完成 cookie 刷新。","needsBuilder":true,"builderAction":"在 Chrome 登录 X","blocked":true,"blocker":"需要 BuilderDong 在本机登录 X","updatedAt":"2026-03-11T17:40:00+08:00","createdAt":"2026-03-03T09:00:00+08:00","archived":false,"sourceRefs":["TODO.md"],"tags":["cookie","x","monitoring"],"history":[{"at":"2026-03-03T09:00:00+08:00","actor":"worker","type":"incident","summary":"xreach 抓取稳定性下降，确认和 cookie 有关。"},{"at":"2026-03-10T20:45:00+08:00","actor":"main","type":"status","summary":"归类为 BuilderDong 亲自处理事项。"},{"at":"2026-03-11T17:40:00+08:00","actor":"main","type":"queue","summary":"继续保留在阻塞区。"}]},{"id":"md2wx-cli","title":"安装 md2wx CLI 替代 Playwright 方案","owner":"worker","collaborators":["learning"],"priority":"P0","stage":"blocked","substatus":"工具评估完成，卡在公众号凭证","category":"ops","summary":"学习评估已经完成，工具本身值得装，当前缺 AppID 与 Secret。","goal":"降低公众号发布的浏览器依赖，换成更可维护的 CLI 链路。","nextAction":"补齐公众号 AppID + Secret 后执行安装与接入。","needsBuilder":true,"builderAction":"提供公众号 AppID / Secret","blocked":true,"blocker":"缺少公众号凭证","updatedAt":"2026-03-11T16:50:00+08:00","createdAt":"2026-03-04T11:00:00+08:00","archived":false,"sourceRefs":["TODO.md"],"tags":["wechat","cli","credentials"],"history":[{"at":"2026-03-04T11:00:00+08:00","actor":"learning","type":"analysis","summary":"评估确认 md2wx 比 Playwright 更适合长期维护。"},{"at":"2026-03-08T20:30:00+08:00","actor":"worker","type":"blocked","summary":"安装步骤核对完成，但凭证缺失无法继续。"},{"at":"2026-03-11T16:50:00+08:00","actor":"main","type":"queue","summary":"保留在阻塞区，待补凭证。"}]},{"id":"openapi-to-skills","title":"评估 openapi-to-skills 集成","owner":"research","collaborators":["main"],"priority":"P1","stage":"triage","substatus":"待正式立项","category":"research","summary":"目标是减少工具定义带来的 token 开销。","goal":"验证是否能用 schema 生成工具定义，减少手工维护与 token 噪音。","nextAction":"确认是否把它并入当前 token 优化批次。","needsBuilder":true,"builderAction":"确认是否立项","blocked":false,"blocker":"","updatedAt":"2026-03-11T14:00:00+08:00","createdAt":"2026-03-07T12:00:00+08:00","archived":false,"sourceRefs":["TODO.md"],"tags":["openapi","skills","research"],"history":[{"at":"2026-03-07T12:00:00+08:00","actor":"research","type":"idea","summary":"提出用 OpenAPI 自动生成 skills 的方向。"},{"at":"2026-03-10T09:00:00+08:00","actor":"main","type":"status","summary":"放入待分发列表，等待是否正式推进。"}]},{"id":"briefing-mail-automation","title":"每日简报和邮件处理自动化","owner":"research","collaborators":["main"],"priority":"P1","stage":"triage","substatus":"有方案，待审批后拆任务","category":"delivery","summary":"包括 cron + message 组合、简报（日程 / 邮件 / 天气 / CI）和邮件分类自动化。","goal":"把高频的日常例行事务收敛成稳定自动化。","nextAction":"BuilderDong 确定这条线是否进入本周排期。","needsBuilder":true,"builderAction":"确认排期","blocked":false,"blocker":"","updatedAt":"2026-03-11T13:50:00+08:00","createdAt":"2026-03-07T15:30:00+08:00","archived":false,"sourceRefs":["TODO.md"],"tags":["automation","briefing","mail"],"history":[{"at":"2026-03-07T15:30:00+08:00","actor":"research","type":"proposal","summary":"沉淀出 cron + message 的自动化组合方案。"},{"at":"2026-03-11T13:50:00+08:00","actor":"main","type":"status","summary":"等待 BuilderDong 决定要不要开。"}]},{"id":"cron-fallback-model","title":"配置 cron fallback 模型","owner":"main","collaborators":[],"priority":"P1","stage":"dispatched","substatus":"问题清楚，待做具体方案","category":"ops","summary":"避免主模型异常时定时任务整批失败。","goal":"让 cron 任务在主模型波动时仍能保底运行。","nextAction":"整理当前 cron 入口与模型覆盖策略，再下发实现。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","updatedAt":"2026-03-11T11:20:00+08:00","createdAt":"2026-03-09T08:30:00+08:00","archived":false,"sourceRefs":["TODO.md"],"tags":["cron","fallback","models"],"history":[{"at":"2026-03-09T08:30:00+08:00","actor":"main","type":"idea","summary":"提出 cron fallback 模型需求。"},{"at":"2026-03-11T11:20:00+08:00","actor":"main","type":"dispatch","summary":"进入已分发状态，待具体方案。"}]},{"id":"token-cost-reduction","title":"按审计结果收敛 MCP / Memory token 开销","owner":"main","collaborators":["research"],"priority":"P1","stage":"builder_queue","substatus":"执行路线清楚，等批量开始","category":"architecture","summary":"modelbox 分析、脚手架审计、上下文压缩方案都已完成，下一步是按方案裁剪。","goal":"直接减少主链路 token 消耗，稳住长期使用成本与速度。","nextAction":"和 MEMORY 主线一起定执行窗口，避免重复改两轮。","needsBuilder":true,"builderAction":"决定是否与 MEMORY 主线打包推进","blocked":false,"blocker":"","updatedAt":"2026-03-11T21:10:00+08:00","createdAt":"2026-03-01T10:00:00+08:00","archived":false,"sourceRefs":["TODO.md"],"tags":["token","mcp","performance"],"history":[{"at":"2026-03-01T10:00:00+08:00","actor":"research","type":"analysis","summary":"完成 token 开销热点拆解。"},{"at":"2026-03-07T15:00:00+08:00","actor":"main","type":"plan","summary":"形成执行清单，待和 MEMORY 主线合并推进。"},{"at":"2026-03-11T21:10:00+08:00","actor":"main","type":"queue","summary":"挪入待我处理区。"}]},{"id":"video-prompt-plan","title":"视频 Prompt 测试方案待选","owner":"builder","collaborators":["design"],"priority":"P1","stage":"builder_queue","substatus":"65 条测试案例已备好，等拍板","category":"content","summary":"设计侧已有 65 条测试案例，等 BuilderDong 选择执行策略。","goal":"确定视频 Prompt 测试方法与样本覆盖范围。","nextAction":"BuilderDong 选择测试策略（快速验证 / 全量跑 / 分阶段跑）。","needsBuilder":true,"builderAction":"选择测试策略","blocked":false,"blocker":"","updatedAt":"2026-03-11T12:40:00+08:00","createdAt":"2026-03-08T18:00:00+08:00","archived":false,"sourceRefs":["TODO.md"],"tags":["prompt","video","decision"],"history":[{"at":"2026-03-08T18:00:00+08:00","actor":"design","type":"prep","summary":"整理出 65 条视频 Prompt 测试案例。"},{"at":"2026-03-11T12:40:00+08:00","actor":"main","type":"queue","summary":"转为明确的待我处理决策项。"}]},{"id":"gateway-patch-regression","title":"Gateway 重启并回归补丁加载结果","owner":"main","collaborators":[],"priority":"P1","stage":"review","substatus":"补丁已落盘，live 进程尚未加载","category":"ops","summary":"~/.openclaw/lib/... 里的补丁语法检查通过，但 live Gateway 仍在跑旧进程。","goal":"重启 Gateway 后完成真实回归验证，确认线上行为与本地补丁一致。","nextAction":"安排重启窗口，然后验证 typing 与 transcript 修复是否在线生效。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","updatedAt":"2026-03-12T00:25:00+08:00","createdAt":"2026-03-11T23:50:00+08:00","archived":false,"sourceRefs":["memory/2026-03-12.md"],"tags":["gateway","regression","ops"],"history":[{"at":"2026-03-11T23:50:00+08:00","actor":"main","type":"progress","summary":"确认补丁文件已写入 ~/.openclaw/lib/...。"},{"at":"2026-03-12T00:10:00+08:00","actor":"main","type":"inspection","summary":"发现 live Gateway 启动时间早于补丁写入时间，说明尚未加载。"},{"at":"2026-03-12T00:25:00+08:00","actor":"main","type":"review","summary":"进入待回归阶段。"}]},{"id":"single-status-message","title":"协作大厅单条状态消息机制","owner":"main","collaborators":[],"priority":"P1","stage":"review","substatus":"链路修复已落盘，完整机制仍待收口","category":"architecture","summary":"BuilderDong 明确偏向“单条状态消息机制”，当前已有 typing 与 transcript 去重补丁，但还不是完整机制。","goal":"让每个任务只维护一条状态消息，用户随时能看到 queued / running / completed 等状态。","nextAction":"在现有修复基础上继续补齐完整状态机与 edit-only 链路。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","updatedAt":"2026-03-12T00:20:00+08:00","createdAt":"2026-03-11T23:40:00+08:00","archived":false,"sourceRefs":["memory/2026-03-12.md"],"tags":["discord","status","ux"],"history":[{"at":"2026-03-11T23:40:00+08:00","actor":"main","type":"decision","summary":"BuilderDong 明确采用单条状态消息机制方向。"},{"at":"2026-03-12T00:05:00+08:00","actor":"main","type":"progress","summary":"已补 typing 生命周期续命与 queued followup transcript 去重。"},{"at":"2026-03-12T00:20:00+08:00","actor":"main","type":"review","summary":"当前成果可视为“链路修复”，完整机制还差最后一段。"}]},{"id":"imessage-full-disk","title":"iMessage Full Disk Access 权限","owner":"builder","collaborators":["main"],"priority":"P1","stage":"blocked","substatus":"系统权限未授权","category":"ops","summary":"持续报 permissionDenied(chat.db)。","goal":"恢复 iMessage / SMS 相关链路的数据库访问能力。","nextAction":"BuilderDong 到系统设置里为 Messages 相关进程开放 Full Disk Access。","needsBuilder":true,"builderAction":"系统设置授权","blocked":true,"blocker":"需要人工在 macOS 系统设置中授权","updatedAt":"2026-03-11T10:50:00+08:00","createdAt":"2026-03-05T09:20:00+08:00","archived":false,"sourceRefs":["TODO.md"],"tags":["imessage","permissions"],"history":[{"at":"2026-03-05T09:20:00+08:00","actor":"main","type":"incident","summary":"调用 iMessage 数据库时报 permissionDenied(chat.db)。"},{"at":"2026-03-11T10:50:00+08:00","actor":"main","type":"queue","summary":"明确为 BuilderDong 的系统权限动作。"}]},{"id":"latent-space-source","title":"订阅 Latent.Space 作为 AI 信息源","owner":"research","collaborators":[],"priority":"P3","stage":"triage","substatus":"待开始","category":"research","summary":"AI 顶级日更聚合（swyx），建议接入新闻系统。","goal":"补强 AI 信息源池，提高日报素材密度。","nextAction":"确认是否先做轻量订阅接入还是直接纳入新闻系统。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","updatedAt":"2026-03-10T21:00:00+08:00","createdAt":"2026-03-06T20:10:00+08:00","archived":false,"sourceRefs":["TODO.md"],"tags":["news","source"],"history":[{"at":"2026-03-06T20:10:00+08:00","actor":"research","type":"idea","summary":"提出 Latent.Space 作为新增信源。"},{"at":"2026-03-10T21:00:00+08:00","actor":"main","type":"backlog","summary":"保留在长期关注。"}]},{"id":"agent-browser-watch","title":"agent-browser 长期关注","owner":"research","collaborators":["main"],"priority":"P3","stage":"acked","substatus":"进入观察队列，等 Diffing 能力补齐再评估","category":"research","summary":"等 OpenClaw Browser 补齐 Diffing 再评估。","goal":"持续跟踪 agent-browser 的成熟度，避免过早接入。","nextAction":"下一次版本有关键进展时再重启评估。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","updatedAt":"2026-03-10T18:00:00+08:00","createdAt":"2026-02-28T17:40:00+08:00","archived":false,"sourceRefs":["TODO.md"],"tags":["browser","watchlist"],"history":[{"at":"2026-02-28T17:40:00+08:00","actor":"research","type":"analysis","summary":"初步评估 agent-browser，结论是不急。"},{"at":"2026-03-10T18:00:00+08:00","actor":"main","type":"ack","summary":"转为长期观察任务，不再频繁打扰主线。"}]},{"id":"seedance-knowledge","title":"Seedance 知识库持续完善","owner":"research","collaborators":["learning"],"priority":"P3","stage":"executing","substatus":"首批整理已完成，继续补充来源","category":"research","summary":"首批 17 网站 + 10 博主已整理，仍在滚动补充。","goal":"把 Seedance 相关知识沉淀成可复用资料库。","nextAction":"按来源重要性补齐新增资源，并整理索引。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","updatedAt":"2026-03-10T19:20:00+08:00","createdAt":"2026-02-28T15:00:00+08:00","archived":false,"sourceRefs":["TODO.md","BOARD.md"],"tags":["seedance","knowledge-base"],"history":[{"at":"2026-02-28T15:00:00+08:00","actor":"research","type":"progress","summary":"完成第一轮 Seedance 资源汇总。"},{"at":"2026-03-10T19:20:00+08:00","actor":"learning","type":"progress","summary":"继续补充知识库，维持执行中。"}]}],"archivedTasks":[{"id":"model-cleanup","title":"冗余模型清理","owner":"main","collaborators":[],"priority":"P2","stage":"done","substatus":"仅保留 3 条主模型链路","category":"ops","summary":"仅保留 GPT-5.4 / Opus / MiniMax M2.5。","goal":"降低配置噪音。","nextAction":"无。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-03-11T18:50:00+08:00","createdAt":"2026-03-11T10:30:00+08:00","doneAt":"2026-03-11T18:50:00+08:00","archivedReason":"模型配置已经清爽。","sourceRefs":["memory/2026-03-11.md"],"tags":["models","cleanup"],"history":[{"at":"2026-03-11T10:30:00+08:00","actor":"main","type":"cleanup","summary":"移除 bailian / glm-5 等冗余模型。"},{"at":"2026-03-11T18:50:00+08:00","actor":"main","type":"done","summary":"保留 3 条主模型链路。"}]},{"id":"codex-oauth-rollout","title":"OpenAI Codex OAuth + GPT-5.4 全 agent 配置","owner":"main","collaborators":[],"priority":"P1","stage":"done","substatus":"模型配置收敛完成","category":"ops","summary":"所有 agents 显式配置为 openai-codex/gpt-5.4。","goal":"统一模型链路。","nextAction":"常规使用。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-03-11T18:30:00+08:00","createdAt":"2026-03-11T09:00:00+08:00","doneAt":"2026-03-11T18:30:00+08:00","archivedReason":"配置已收敛。","sourceRefs":["memory/2026-03-11.md"],"tags":["codex","oauth","models"],"history":[{"at":"2026-03-11T09:00:00+08:00","actor":"main","type":"setup","summary":"完成 OpenAI Codex OAuth 登录。"},{"at":"2026-03-11T18:30:00+08:00","actor":"main","type":"done","summary":"全 agent 模型统一为 gpt-5.4。"}]},{"id":"xhs-dashboard-deploy","title":"小红书 Dashboard 部署","owner":"main","collaborators":["worker"],"priority":"P2","stage":"done","substatus":"部署完成","category":"delivery","summary":"Dashboard 更新部署完成。","goal":"让小红书侧有更稳定的展示与运营入口。","nextAction":"后续迭代再开新任务。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-03-11T17:20:00+08:00","createdAt":"2026-03-10T16:00:00+08:00","doneAt":"2026-03-11T17:20:00+08:00","archivedReason":"部署已完成。","sourceRefs":["TODO.md"],"tags":["xhs","dashboard"],"history":[{"at":"2026-03-10T16:00:00+08:00","actor":"worker","type":"deploy","summary":"开始部署 dashboard 更新。"},{"at":"2026-03-11T17:20:00+08:00","actor":"main","type":"done","summary":"部署完成。"}]},{"id":"qmd-install","title":"QMD 安装 + 集成验证","owner":"main","collaborators":[],"priority":"P2","stage":"done","substatus":"安装与索引测试完成","category":"ops","summary":"QMD 安装、索引测试与 OpenClaw memory 集成完成。","goal":"验证 QMD 可用于知识管理链路。","nextAction":"按需继续使用。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-03-10T18:20:00+08:00","createdAt":"2026-03-09T16:00:00+08:00","doneAt":"2026-03-10T18:20:00+08:00","archivedReason":"验证任务已结束。","sourceRefs":["TODO.md"],"tags":["qmd","integration"],"history":[{"at":"2026-03-09T16:00:00+08:00","actor":"main","type":"setup","summary":"开始安装和索引测试。"},{"at":"2026-03-10T18:20:00+08:00","actor":"main","type":"done","summary":"QMD 集成验证完成。"}]},{"id":"agentshield-audit","title":"agentshield 安全审计","owner":"research","collaborators":["main"],"priority":"P2","stage":"done","substatus":"审计结论已归档","category":"architecture","summary":"安全审计完成，结论已沉淀。","goal":"掌握系统安全边界与修复优先级。","nextAction":"如需执行再开新的修复任务。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-03-09T12:30:00+08:00","createdAt":"2026-03-08T20:00:00+08:00","doneAt":"2026-03-09T12:30:00+08:00","archivedReason":"审计已完成，执行动作另开任务。","sourceRefs":["TODO.md"],"tags":["security","audit"],"history":[{"at":"2026-03-08T20:00:00+08:00","actor":"research","type":"audit","summary":"启动 agentshield 安全审计。"},{"at":"2026-03-09T12:30:00+08:00","actor":"research","type":"done","summary":"输出安全审计结论。"}]},{"id":"ai-news-monitor","title":"AI 新闻监控上线","owner":"main","collaborators":["research"],"priority":"P1","stage":"done","substatus":"上线完成","category":"delivery","summary":"HN 首页筛选 → 情报站，每 4 小时运行。","goal":"建立稳定的 AI 新闻监听。","nextAction":"继续运行，无需额外动作。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-02-28T22:10:00+08:00","createdAt":"2026-02-27T19:00:00+08:00","doneAt":"2026-02-28T22:10:00+08:00","archivedReason":"上线已完成，转入常规运行。","sourceRefs":["BOARD.html"],"tags":["news","monitoring"],"history":[{"at":"2026-02-27T19:00:00+08:00","actor":"research","type":"build","summary":"情报站方案敲定。"},{"at":"2026-02-28T22:10:00+08:00","actor":"main","type":"done","summary":"AI 新闻监控正式上线。"}]},{"id":"opennews-opentwitter-install","title":"opennews-mcp + opentwitter-mcp 安装","owner":"main","collaborators":[],"priority":"P1","stage":"done","substatus":"安装与 token 配置完成","category":"ops","summary":"ClawHub 安装 + Token 配置完成。","goal":"扩充 X / Crypto 数据能力。","nextAction":"按需使用。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-02-28T20:30:00+08:00","createdAt":"2026-02-28T18:30:00+08:00","doneAt":"2026-02-28T20:30:00+08:00","archivedReason":"环境已经可用。","sourceRefs":["BOARD.html"],"tags":["mcp","install"],"history":[{"at":"2026-02-28T18:30:00+08:00","actor":"main","type":"setup","summary":"通过 ClawHub 拉取两个技能。"},{"at":"2026-02-28T20:30:00+08:00","actor":"main","type":"done","summary":"安装与 token 配置完成。"}]},{"id":"git-large-file-cleanup","title":"Git 大文件清理","owner":"main","collaborators":[],"priority":"P1","stage":"done","substatus":"历史瘦身完成","category":"ops","summary":"100MB 视频从历史中清除。","goal":"让仓库恢复可推送、可同步。","nextAction":"无。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-02-28T19:10:00+08:00","createdAt":"2026-02-28T17:40:00+08:00","doneAt":"2026-02-28T19:10:00+08:00","archivedReason":"仓库体积问题已解决。","sourceRefs":["BOARD.html"],"tags":["git","cleanup"],"history":[{"at":"2026-02-28T17:40:00+08:00","actor":"main","type":"incident","summary":"发现大文件导致 git 历史异常。"},{"at":"2026-02-28T19:10:00+08:00","actor":"main","type":"done","summary":"完成历史清理。"}]},{"id":"agent-browser-research","title":"agent-browser.dev 调研","owner":"research","collaborators":[],"priority":"P2","stage":"done","substatus":"阶段性结论已出","category":"research","summary":"结论：可选装，不急需。","goal":"判断是否值得引入。","nextAction":"等待产品成熟后再看。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-02-28T18:20:00+08:00","createdAt":"2026-02-27T16:00:00+08:00","doneAt":"2026-02-28T18:20:00+08:00","archivedReason":"目前只需观察，无需持续占用活动面板。","sourceRefs":["BOARD.html"],"tags":["browser","research"],"history":[{"at":"2026-02-27T16:00:00+08:00","actor":"research","type":"analysis","summary":"完成初轮调研。"},{"at":"2026-02-28T18:20:00+08:00","actor":"research","type":"done","summary":"给出“可选装不急需”的结论。"}]},{"id":"seedance-roundup","title":"Seedance 资源汇总","owner":"research","collaborators":[],"priority":"P2","stage":"done","substatus":"首轮汇总完成","category":"research","summary":"17 网站 + 10 博主。","goal":"形成 Seedance 资料入口。","nextAction":"后续作为持续完善任务继续滚动补充。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-02-28T18:15:00+08:00","createdAt":"2026-02-27T18:00:00+08:00","doneAt":"2026-02-28T18:15:00+08:00","archivedReason":"首轮交付完成，转为常规维护。","sourceRefs":["BOARD.html"],"tags":["seedance","research"],"history":[{"at":"2026-02-27T18:00:00+08:00","actor":"research","type":"collect","summary":"开始拉取 Seedance 来源。"},{"at":"2026-02-28T18:15:00+08:00","actor":"research","type":"done","summary":"完成首轮汇总。"}]},{"id":"md2wechat-study","title":"md2wechat CLI 学习评估","owner":"learning","collaborators":[],"priority":"P2","stage":"done","substatus":"已给出建议","category":"research","summary":"强烈推荐替代 Playwright。","goal":"判断公众号发布链路是否应切换。","nextAction":"等待凭证后再进入安装任务。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-02-28T16:50:00+08:00","createdAt":"2026-02-28T11:00:00+08:00","doneAt":"2026-02-28T16:50:00+08:00","archivedReason":"学习结论已经沉淀，后续转入安装任务。","sourceRefs":["BOARD.html"],"tags":["wechat","cli"],"history":[{"at":"2026-02-28T11:00:00+08:00","actor":"learning","type":"study","summary":"开始分析 md2wechat CLI。"},{"at":"2026-02-28T16:50:00+08:00","actor":"learning","type":"done","summary":"输出“强烈推荐替代 Playwright”的结论。"}]},{"id":"allowbots-whitelist","title":"allowBots + users 白名单","owner":"main","collaborators":[],"priority":"P1","stage":"done","substatus":"配置完成","category":"architecture","summary":"bot 互通已开启。","goal":"打通 bot 之间的正常协作。","nextAction":"无。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-02-28T15:30:00+08:00","createdAt":"2026-02-28T14:20:00+08:00","doneAt":"2026-02-28T15:30:00+08:00","archivedReason":"配置稳定运行中。","sourceRefs":["BOARD.html"],"tags":["discord","config"],"history":[{"at":"2026-02-28T14:20:00+08:00","actor":"main","type":"setup","summary":"调整 allowBots 与 users 白名单。"},{"at":"2026-02-28T15:30:00+08:00","actor":"main","type":"done","summary":"完成配置。"}]},{"id":"opus-timeout-fix","title":"Opus 超时修复","owner":"main","collaborators":[],"priority":"P1","stage":"done","substatus":"CRS v1.1.286 已修复","category":"architecture","summary":"超时问题修复完成。","goal":"恢复模型调用稳定性。","nextAction":"无。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-02-28T15:10:00+08:00","createdAt":"2026-02-27T23:00:00+08:00","doneAt":"2026-02-28T15:10:00+08:00","archivedReason":"已修复，不再占活动位。","sourceRefs":["BOARD.html"],"tags":["model","timeout"],"history":[{"at":"2026-02-27T23:00:00+08:00","actor":"main","type":"incident","summary":"追查 Opus 超时问题。"},{"at":"2026-02-28T15:10:00+08:00","actor":"main","type":"done","summary":"CRS v1.1.286 修复完成。"}]},{"id":"todo-board-init","title":"TODO / 看板机制建立","owner":"main","collaborators":[],"priority":"P1","stage":"done","substatus":"第一版机制已上线","category":"delivery","summary":"本文件 + 置顶消息机制建立。","goal":"给团队任务提供统一展示入口。","nextAction":"升级为新的 authoritative task store。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-02-28T14:00:00+08:00","createdAt":"2026-02-28T09:00:00+08:00","doneAt":"2026-02-28T14:00:00+08:00","archivedReason":"第一版完成，现进入 2.0 升级。","sourceRefs":["BOARD.html"],"tags":["board","todo"],"history":[{"at":"2026-02-28T09:00:00+08:00","actor":"main","type":"build","summary":"开始搭建 TODO / Board 展示机制。"},{"at":"2026-02-28T14:00:00+08:00","actor":"main","type":"done","summary":"第一版看板正式可用。"}]}],"archiveGroups":[{"key":"ops","label":"系统配置","tone":"emerald","tasks":[{"id":"model-cleanup","title":"冗余模型清理","owner":"main","collaborators":[],"priority":"P2","stage":"done","substatus":"仅保留 3 条主模型链路","category":"ops","summary":"仅保留 GPT-5.4 / Opus / MiniMax M2.5。","goal":"降低配置噪音。","nextAction":"无。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-03-11T18:50:00+08:00","createdAt":"2026-03-11T10:30:00+08:00","doneAt":"2026-03-11T18:50:00+08:00","archivedReason":"模型配置已经清爽。","sourceRefs":["memory/2026-03-11.md"],"tags":["models","cleanup"],"history":[{"at":"2026-03-11T10:30:00+08:00","actor":"main","type":"cleanup","summary":"移除 bailian / glm-5 等冗余模型。"},{"at":"2026-03-11T18:50:00+08:00","actor":"main","type":"done","summary":"保留 3 条主模型链路。"}]},{"id":"codex-oauth-rollout","title":"OpenAI Codex OAuth + GPT-5.4 全 agent 配置","owner":"main","collaborators":[],"priority":"P1","stage":"done","substatus":"模型配置收敛完成","category":"ops","summary":"所有 agents 显式配置为 openai-codex/gpt-5.4。","goal":"统一模型链路。","nextAction":"常规使用。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-03-11T18:30:00+08:00","createdAt":"2026-03-11T09:00:00+08:00","doneAt":"2026-03-11T18:30:00+08:00","archivedReason":"配置已收敛。","sourceRefs":["memory/2026-03-11.md"],"tags":["codex","oauth","models"],"history":[{"at":"2026-03-11T09:00:00+08:00","actor":"main","type":"setup","summary":"完成 OpenAI Codex OAuth 登录。"},{"at":"2026-03-11T18:30:00+08:00","actor":"main","type":"done","summary":"全 agent 模型统一为 gpt-5.4。"}]},{"id":"qmd-install","title":"QMD 安装 + 集成验证","owner":"main","collaborators":[],"priority":"P2","stage":"done","substatus":"安装与索引测试完成","category":"ops","summary":"QMD 安装、索引测试与 OpenClaw memory 集成完成。","goal":"验证 QMD 可用于知识管理链路。","nextAction":"按需继续使用。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-03-10T18:20:00+08:00","createdAt":"2026-03-09T16:00:00+08:00","doneAt":"2026-03-10T18:20:00+08:00","archivedReason":"验证任务已结束。","sourceRefs":["TODO.md"],"tags":["qmd","integration"],"history":[{"at":"2026-03-09T16:00:00+08:00","actor":"main","type":"setup","summary":"开始安装和索引测试。"},{"at":"2026-03-10T18:20:00+08:00","actor":"main","type":"done","summary":"QMD 集成验证完成。"}]},{"id":"opennews-opentwitter-install","title":"opennews-mcp + opentwitter-mcp 安装","owner":"main","collaborators":[],"priority":"P1","stage":"done","substatus":"安装与 token 配置完成","category":"ops","summary":"ClawHub 安装 + Token 配置完成。","goal":"扩充 X / Crypto 数据能力。","nextAction":"按需使用。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-02-28T20:30:00+08:00","createdAt":"2026-02-28T18:30:00+08:00","doneAt":"2026-02-28T20:30:00+08:00","archivedReason":"环境已经可用。","sourceRefs":["BOARD.html"],"tags":["mcp","install"],"history":[{"at":"2026-02-28T18:30:00+08:00","actor":"main","type":"setup","summary":"通过 ClawHub 拉取两个技能。"},{"at":"2026-02-28T20:30:00+08:00","actor":"main","type":"done","summary":"安装与 token 配置完成。"}]},{"id":"git-large-file-cleanup","title":"Git 大文件清理","owner":"main","collaborators":[],"priority":"P1","stage":"done","substatus":"历史瘦身完成","category":"ops","summary":"100MB 视频从历史中清除。","goal":"让仓库恢复可推送、可同步。","nextAction":"无。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-02-28T19:10:00+08:00","createdAt":"2026-02-28T17:40:00+08:00","doneAt":"2026-02-28T19:10:00+08:00","archivedReason":"仓库体积问题已解决。","sourceRefs":["BOARD.html"],"tags":["git","cleanup"],"history":[{"at":"2026-02-28T17:40:00+08:00","actor":"main","type":"incident","summary":"发现大文件导致 git 历史异常。"},{"at":"2026-02-28T19:10:00+08:00","actor":"main","type":"done","summary":"完成历史清理。"}]}]},{"key":"research","label":"调研探索","tone":"amber","tasks":[{"id":"agent-browser-research","title":"agent-browser.dev 调研","owner":"research","collaborators":[],"priority":"P2","stage":"done","substatus":"阶段性结论已出","category":"research","summary":"结论：可选装，不急需。","goal":"判断是否值得引入。","nextAction":"等待产品成熟后再看。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-02-28T18:20:00+08:00","createdAt":"2026-02-27T16:00:00+08:00","doneAt":"2026-02-28T18:20:00+08:00","archivedReason":"目前只需观察，无需持续占用活动面板。","sourceRefs":["BOARD.html"],"tags":["browser","research"],"history":[{"at":"2026-02-27T16:00:00+08:00","actor":"research","type":"analysis","summary":"完成初轮调研。"},{"at":"2026-02-28T18:20:00+08:00","actor":"research","type":"done","summary":"给出“可选装不急需”的结论。"}]},{"id":"seedance-roundup","title":"Seedance 资源汇总","owner":"research","collaborators":[],"priority":"P2","stage":"done","substatus":"首轮汇总完成","category":"research","summary":"17 网站 + 10 博主。","goal":"形成 Seedance 资料入口。","nextAction":"后续作为持续完善任务继续滚动补充。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-02-28T18:15:00+08:00","createdAt":"2026-02-27T18:00:00+08:00","doneAt":"2026-02-28T18:15:00+08:00","archivedReason":"首轮交付完成，转为常规维护。","sourceRefs":["BOARD.html"],"tags":["seedance","research"],"history":[{"at":"2026-02-27T18:00:00+08:00","actor":"research","type":"collect","summary":"开始拉取 Seedance 来源。"},{"at":"2026-02-28T18:15:00+08:00","actor":"research","type":"done","summary":"完成首轮汇总。"}]},{"id":"md2wechat-study","title":"md2wechat CLI 学习评估","owner":"learning","collaborators":[],"priority":"P2","stage":"done","substatus":"已给出建议","category":"research","summary":"强烈推荐替代 Playwright。","goal":"判断公众号发布链路是否应切换。","nextAction":"等待凭证后再进入安装任务。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-02-28T16:50:00+08:00","createdAt":"2026-02-28T11:00:00+08:00","doneAt":"2026-02-28T16:50:00+08:00","archivedReason":"学习结论已经沉淀，后续转入安装任务。","sourceRefs":["BOARD.html"],"tags":["wechat","cli"],"history":[{"at":"2026-02-28T11:00:00+08:00","actor":"learning","type":"study","summary":"开始分析 md2wechat CLI。"},{"at":"2026-02-28T16:50:00+08:00","actor":"learning","type":"done","summary":"输出“强烈推荐替代 Playwright”的结论。"}]}]},{"key":"delivery","label":"项目交付","tone":"blue","tasks":[{"id":"xhs-dashboard-deploy","title":"小红书 Dashboard 部署","owner":"main","collaborators":["worker"],"priority":"P2","stage":"done","substatus":"部署完成","category":"delivery","summary":"Dashboard 更新部署完成。","goal":"让小红书侧有更稳定的展示与运营入口。","nextAction":"后续迭代再开新任务。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-03-11T17:20:00+08:00","createdAt":"2026-03-10T16:00:00+08:00","doneAt":"2026-03-11T17:20:00+08:00","archivedReason":"部署已完成。","sourceRefs":["TODO.md"],"tags":["xhs","dashboard"],"history":[{"at":"2026-03-10T16:00:00+08:00","actor":"worker","type":"deploy","summary":"开始部署 dashboard 更新。"},{"at":"2026-03-11T17:20:00+08:00","actor":"main","type":"done","summary":"部署完成。"}]},{"id":"ai-news-monitor","title":"AI 新闻监控上线","owner":"main","collaborators":["research"],"priority":"P1","stage":"done","substatus":"上线完成","category":"delivery","summary":"HN 首页筛选 → 情报站，每 4 小时运行。","goal":"建立稳定的 AI 新闻监听。","nextAction":"继续运行，无需额外动作。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-02-28T22:10:00+08:00","createdAt":"2026-02-27T19:00:00+08:00","doneAt":"2026-02-28T22:10:00+08:00","archivedReason":"上线已完成，转入常规运行。","sourceRefs":["BOARD.html"],"tags":["news","monitoring"],"history":[{"at":"2026-02-27T19:00:00+08:00","actor":"research","type":"build","summary":"情报站方案敲定。"},{"at":"2026-02-28T22:10:00+08:00","actor":"main","type":"done","summary":"AI 新闻监控正式上线。"}]},{"id":"todo-board-init","title":"TODO / 看板机制建立","owner":"main","collaborators":[],"priority":"P1","stage":"done","substatus":"第一版机制已上线","category":"delivery","summary":"本文件 + 置顶消息机制建立。","goal":"给团队任务提供统一展示入口。","nextAction":"升级为新的 authoritative task store。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-02-28T14:00:00+08:00","createdAt":"2026-02-28T09:00:00+08:00","doneAt":"2026-02-28T14:00:00+08:00","archivedReason":"第一版完成，现进入 2.0 升级。","sourceRefs":["BOARD.html"],"tags":["board","todo"],"history":[{"at":"2026-02-28T09:00:00+08:00","actor":"main","type":"build","summary":"开始搭建 TODO / Board 展示机制。"},{"at":"2026-02-28T14:00:00+08:00","actor":"main","type":"done","summary":"第一版看板正式可用。"}]}]},{"key":"architecture","label":"OpenClaw 架构优化","tone":"violet","tasks":[{"id":"agentshield-audit","title":"agentshield 安全审计","owner":"research","collaborators":["main"],"priority":"P2","stage":"done","substatus":"审计结论已归档","category":"architecture","summary":"安全审计完成，结论已沉淀。","goal":"掌握系统安全边界与修复优先级。","nextAction":"如需执行再开新的修复任务。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-03-09T12:30:00+08:00","createdAt":"2026-03-08T20:00:00+08:00","doneAt":"2026-03-09T12:30:00+08:00","archivedReason":"审计已完成，执行动作另开任务。","sourceRefs":["TODO.md"],"tags":["security","audit"],"history":[{"at":"2026-03-08T20:00:00+08:00","actor":"research","type":"audit","summary":"启动 agentshield 安全审计。"},{"at":"2026-03-09T12:30:00+08:00","actor":"research","type":"done","summary":"输出安全审计结论。"}]},{"id":"allowbots-whitelist","title":"allowBots + users 白名单","owner":"main","collaborators":[],"priority":"P1","stage":"done","substatus":"配置完成","category":"architecture","summary":"bot 互通已开启。","goal":"打通 bot 之间的正常协作。","nextAction":"无。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-02-28T15:30:00+08:00","createdAt":"2026-02-28T14:20:00+08:00","doneAt":"2026-02-28T15:30:00+08:00","archivedReason":"配置稳定运行中。","sourceRefs":["BOARD.html"],"tags":["discord","config"],"history":[{"at":"2026-02-28T14:20:00+08:00","actor":"main","type":"setup","summary":"调整 allowBots 与 users 白名单。"},{"at":"2026-02-28T15:30:00+08:00","actor":"main","type":"done","summary":"完成配置。"}]},{"id":"opus-timeout-fix","title":"Opus 超时修复","owner":"main","collaborators":[],"priority":"P1","stage":"done","substatus":"CRS v1.1.286 已修复","category":"architecture","summary":"超时问题修复完成。","goal":"恢复模型调用稳定性。","nextAction":"无。","needsBuilder":false,"builderAction":"","blocked":false,"blocker":"","archived":true,"updatedAt":"2026-02-28T15:10:00+08:00","createdAt":"2026-02-27T23:00:00+08:00","doneAt":"2026-02-28T15:10:00+08:00","archivedReason":"已修复，不再占活动位。","sourceRefs":["BOARD.html"],"tags":["model","timeout"],"history":[{"at":"2026-02-27T23:00:00+08:00","actor":"main","type":"incident","summary":"追查 Opus 超时问题。"},{"at":"2026-02-28T15:10:00+08:00","actor":"main","type":"done","summary":"CRS v1.1.286 修复完成。"}]}]}],"recentHistory":[{"at":"2026-03-12T00:25:00+08:00","actor":"main","type":"review","summary":"进入待回归阶段。","taskId":"gateway-patch-regression","taskTitle":"Gateway 重启并回归补丁加载结果","category":"ops","stage":"review","priority":"P1","actorLabel":"总管 🦊"},{"at":"2026-03-12T00:20:00+08:00","actor":"main","type":"review","summary":"当前成果可视为“链路修复”，完整机制还差最后一段。","taskId":"single-status-message","taskTitle":"协作大厅单条状态消息机制","category":"architecture","stage":"review","priority":"P1","actorLabel":"总管 🦊"},{"at":"2026-03-12T00:10:00+08:00","actor":"main","type":"inspection","summary":"发现 live Gateway 启动时间早于补丁写入时间，说明尚未加载。","taskId":"gateway-patch-regression","taskTitle":"Gateway 重启并回归补丁加载结果","category":"ops","stage":"review","priority":"P1","actorLabel":"总管 🦊"},{"at":"2026-03-12T00:05:00+08:00","actor":"main","type":"progress","summary":"已补 typing 生命周期续命与 queued followup transcript 去重。","taskId":"single-status-message","taskTitle":"协作大厅单条状态消息机制","category":"architecture","stage":"review","priority":"P1","actorLabel":"总管 🦊"},{"at":"2026-03-11T23:50:00+08:00","actor":"main","type":"progress","summary":"确认补丁文件已写入 ~/.openclaw/lib/...。","taskId":"gateway-patch-regression","taskTitle":"Gateway 重启并回归补丁加载结果","category":"ops","stage":"review","priority":"P1","actorLabel":"总管 🦊"},{"at":"2026-03-11T23:40:00+08:00","actor":"main","type":"decision","summary":"BuilderDong 明确采用单条状态消息机制方向。","taskId":"single-status-message","taskTitle":"协作大厅单条状态消息机制","category":"architecture","stage":"review","priority":"P1","actorLabel":"总管 🦊"},{"at":"2026-03-11T21:30:00+08:00","actor":"main","type":"status","summary":"并入待我处理队列，等 BuilderDong 拍板。","taskId":"memory-compaction","taskTitle":"MEMORY.md 瘦身 + 上下文压缩方案落地","category":"architecture","stage":"builder_queue","priority":"P0","actorLabel":"总管 🦊"},{"at":"2026-03-11T21:10:00+08:00","actor":"main","type":"queue","summary":"挪入待我处理区。","taskId":"token-cost-reduction","taskTitle":"按审计结果收敛 MCP / Memory token 开销","category":"architecture","stage":"builder_queue","priority":"P1","actorLabel":"总管 🦊"},{"at":"2026-03-11T19:10:00+08:00","actor":"main","type":"queue","summary":"等待 BuilderDong 拍板。","taskId":"xhs-generalization","taskTitle":"小红书抓取工具通用化改造","category":"delivery","stage":"builder_queue","priority":"P0","actorLabel":"总管 🦊"},{"at":"2026-03-11T18:50:00+08:00","actor":"main","type":"done","summary":"保留 3 条主模型链路。","taskId":"model-cleanup","taskTitle":"冗余模型清理","category":"ops","stage":"done","priority":"P2","actorLabel":"总管 🦊"},{"at":"2026-03-11T18:30:00+08:00","actor":"main","type":"done","summary":"全 agent 模型统一为 gpt-5.4。","taskId":"codex-oauth-rollout","taskTitle":"OpenAI Codex OAuth + GPT-5.4 全 agent 配置","category":"ops","stage":"done","priority":"P1","actorLabel":"总管 🦊"},{"at":"2026-03-11T18:20:00+08:00","actor":"design","type":"progress","summary":"仍在执行中，等待补齐成图。","taskId":"wechat-v3-illustration","taskTitle":"微信文章 v3 插画生成 + 发布","category":"content","stage":"executing","priority":"P0","actorLabel":"设计 🎨"},{"at":"2026-03-11T17:50:00+08:00","actor":"main","type":"queue","summary":"加入待我处理清单。","taskId":"xhs-cookie-refresh","taskTitle":"小红书 cookie 重新登录","category":"ops","stage":"blocked","priority":"P0","actorLabel":"总管 🦊"},{"at":"2026-03-11T17:40:00+08:00","actor":"main","type":"queue","summary":"继续保留在阻塞区。","taskId":"x-cookie-refresh","taskTitle":"X / xreach cookie 刷新","category":"ops","stage":"blocked","priority":"P0","actorLabel":"总管 🦊"},{"at":"2026-03-11T17:20:00+08:00","actor":"main","type":"done","summary":"部署完成。","taskId":"xhs-dashboard-deploy","taskTitle":"小红书 Dashboard 部署","category":"delivery","stage":"done","priority":"P2","actorLabel":"总管 🦊"},{"at":"2026-03-11T16:50:00+08:00","actor":"main","type":"queue","summary":"保留在阻塞区，待补凭证。","taskId":"md2wx-cli","taskTitle":"安装 md2wx CLI 替代 Playwright 方案","category":"ops","stage":"blocked","priority":"P0","actorLabel":"总管 🦊"},{"at":"2026-03-11T13:50:00+08:00","actor":"main","type":"status","summary":"等待 BuilderDong 决定要不要开。","taskId":"briefing-mail-automation","taskTitle":"每日简报和邮件处理自动化","category":"delivery","stage":"triage","priority":"P1","actorLabel":"总管 🦊"},{"at":"2026-03-11T12:40:00+08:00","actor":"main","type":"queue","summary":"转为明确的待我处理决策项。","taskId":"video-prompt-plan","taskTitle":"视频 Prompt 测试方案待选","category":"content","stage":"builder_queue","priority":"P1","actorLabel":"总管 🦊"},{"at":"2026-03-11T11:20:00+08:00","actor":"main","type":"dispatch","summary":"进入已分发状态，待具体方案。","taskId":"cron-fallback-model","taskTitle":"配置 cron fallback 模型","category":"ops","stage":"dispatched","priority":"P1","actorLabel":"总管 🦊"},{"at":"2026-03-11T10:50:00+08:00","actor":"main","type":"queue","summary":"明确为 BuilderDong 的系统权限动作。","taskId":"imessage-full-disk","taskTitle":"iMessage Full Disk Access 权限","category":"ops","stage":"blocked","priority":"P1","actorLabel":"总管 🦊"},{"at":"2026-03-11T10:30:00+08:00","actor":"main","type":"cleanup","summary":"移除 bailian / glm-5 等冗余模型。","taskId":"model-cleanup","taskTitle":"冗余模型清理","category":"ops","stage":"done","priority":"P2","actorLabel":"总管 🦊"},{"at":"2026-03-11T09:00:00+08:00","actor":"main","type":"setup","summary":"完成 OpenAI Codex OAuth 登录。","taskId":"codex-oauth-rollout","taskTitle":"OpenAI Codex OAuth + GPT-5.4 全 agent 配置","category":"ops","stage":"done","priority":"P1","actorLabel":"总管 🦊"},{"at":"2026-03-10T22:00:00+08:00","actor":"main","type":"status","summary":"明确仅剩插画与发布两步。","taskId":"wechat-v3-illustration","taskTitle":"微信文章 v3 插画生成 + 发布","category":"content","stage":"executing","priority":"P0","actorLabel":"总管 🦊"},{"at":"2026-03-10T21:00:00+08:00","actor":"main","type":"backlog","summary":"保留在长期关注。","taskId":"latent-space-source","taskTitle":"订阅 Latent.Space 作为 AI 信息源","category":"research","stage":"triage","priority":"P3","actorLabel":"总管 🦊"},{"at":"2026-03-10T20:45:00+08:00","actor":"main","type":"status","summary":"归类为 BuilderDong 亲自处理事项。","taskId":"x-cookie-refresh","taskTitle":"X / xreach cookie 刷新","category":"ops","stage":"blocked","priority":"P0","actorLabel":"总管 🦊"},{"at":"2026-03-10T19:20:00+08:00","actor":"learning","type":"progress","summary":"继续补充知识库，维持执行中。","taskId":"seedance-knowledge","taskTitle":"Seedance 知识库持续完善","category":"research","stage":"executing","priority":"P3","actorLabel":"学习 📚"},{"at":"2026-03-10T18:20:00+08:00","actor":"main","type":"done","summary":"QMD 集成验证完成。","taskId":"qmd-install","taskTitle":"QMD 安装 + 集成验证","category":"ops","stage":"done","priority":"P2","actorLabel":"总管 🦊"},{"at":"2026-03-10T18:00:00+08:00","actor":"main","type":"ack","summary":"转为长期观察任务，不再频繁打扰主线。","taskId":"agent-browser-watch","taskTitle":"agent-browser 长期关注","category":"research","stage":"acked","priority":"P3","actorLabel":"总管 🦊"},{"at":"2026-03-10T16:00:00+08:00","actor":"worker","type":"deploy","summary":"开始部署 dashboard 更新。","taskId":"xhs-dashboard-deploy","taskTitle":"小红书 Dashboard 部署","category":"delivery","stage":"done","priority":"P2","actorLabel":"干活 🔨"},{"at":"2026-03-10T09:00:00+08:00","actor":"main","type":"status","summary":"放入待分发列表，等待是否正式推进。","taskId":"openapi-to-skills","taskTitle":"评估 openapi-to-skills 集成","category":"research","stage":"triage","priority":"P1","actorLabel":"总管 🦊"}],"recentUpdated":[{"id":"gateway-patch-regression","title":"Gateway 重启并回归补丁加载结果","updatedAt":"2026-03-12T00:25:00+08:00","owner":"main","stage":"review","priority":"P1","summary":"补丁已落盘，live 进程尚未加载"},{"id":"single-status-message","title":"协作大厅单条状态消息机制","updatedAt":"2026-03-12T00:20:00+08:00","owner":"main","stage":"review","priority":"P1","summary":"链路修复已落盘，完整机制仍待收口"},{"id":"memory-compaction","title":"MEMORY.md 瘦身 + 上下文压缩方案落地","updatedAt":"2026-03-11T21:30:00+08:00","owner":"main","stage":"builder_queue","priority":"P0","summary":"方案已齐，等拍板执行范围"},{"id":"token-cost-reduction","title":"按审计结果收敛 MCP / Memory token 开销","updatedAt":"2026-03-11T21:10:00+08:00","owner":"main","stage":"builder_queue","priority":"P1","summary":"执行路线清楚，等批量开始"},{"id":"xhs-generalization","title":"小红书抓取工具通用化改造","updatedAt":"2026-03-11T19:10:00+08:00","owner":"worker","stage":"builder_queue","priority":"P0","summary":"方案已完成，待确认开工"},{"id":"model-cleanup","title":"冗余模型清理","updatedAt":"2026-03-11T18:50:00+08:00","owner":"main","stage":"done","priority":"P2","summary":"仅保留 3 条主模型链路"},{"id":"codex-oauth-rollout","title":"OpenAI Codex OAuth + GPT-5.4 全 agent 配置","updatedAt":"2026-03-11T18:30:00+08:00","owner":"main","stage":"done","priority":"P1","summary":"模型配置收敛完成"},{"id":"wechat-v3-illustration","title":"微信文章 v3 插画生成 + 发布","updatedAt":"2026-03-11T18:20:00+08:00","owner":"design","stage":"executing","priority":"P0","summary":"正文已好，当前卡在插画与最终发布"},{"id":"xhs-cookie-refresh","title":"小红书 cookie 重新登录","updatedAt":"2026-03-11T17:50:00+08:00","owner":"worker","stage":"blocked","priority":"P0","summary":"扫码前无法恢复发布链路"},{"id":"x-cookie-refresh","title":"X / xreach cookie 刷新","updatedAt":"2026-03-11T17:40:00+08:00","owner":"worker","stage":"blocked","priority":"P0","summary":"账号未重新登录前无法稳定抓取"},{"id":"xhs-dashboard-deploy","title":"小红书 Dashboard 部署","updatedAt":"2026-03-11T17:20:00+08:00","owner":"main","stage":"done","priority":"P2","summary":"部署完成"},{"id":"md2wx-cli","title":"安装 md2wx CLI 替代 Playwright 方案","updatedAt":"2026-03-11T16:50:00+08:00","owner":"worker","stage":"blocked","priority":"P0","summary":"工具评估完成，卡在公众号凭证"}]};</script>
+  <script>
+(function () {
+  const payload = window.__BOARD_PAYLOAD__ || {};
+  const STORAGE_KEY = 'openclaw-board-overrides-v2';
+  const UI_KEY = 'openclaw-board-ui-v2';
+  const MOBILE_BREAKPOINT = 1180;
+
+  const owners = payload.meta?.owners || {};
+  const priorities = payload.meta?.priorities || {};
+  const categories = payload.meta?.categories || {};
+  const stages = payload.meta?.stages || {};
+  const stageOrder = payload.meta?.stageOrder || [];
+  const priorityOrder = Object.keys(priorities).sort((a, b) => (priorities[a]?.weight ?? 999) - (priorities[b]?.weight ?? 999));
+  const stageRank = Object.fromEntries(stageOrder.map((stage, index) => [stage, index]));
+  const taskMap = Object.fromEntries((payload.tasks || []).map((task) => [task.id, task]));
+  const baseTaskKeys = Array.from(new Set((payload.tasks || []).flatMap((task) => Object.keys(task))));
+
+  const persistedUi = readJson(UI_KEY, {});
+  const state = {
+    overrides: readJson(STORAGE_KEY, {}),
+    view: persistedUi.view || 'board',
+    search: persistedUi.search || '',
+    filters: {
+      stage: persistedUi.filters?.stage || 'all',
+      owner: persistedUi.filters?.owner || 'all',
+      priority: persistedUi.filters?.priority || 'all',
+      category: persistedUi.filters?.category || 'all',
+      needsBuilder: persistedUi.filters?.needsBuilder || 'all',
+      blocked: persistedUi.filters?.blocked || 'all',
+    },
+    selectedTaskId: persistedUi.selectedTaskId || (payload.tasks?.[0]?.id ?? null),
+    archiveTab: persistedUi.archiveTab || 'all',
+    drawerOpen: false,
+  };
+
+  const dom = {
+    focusSection: document.getElementById('focusSection'),
+    kpiSection: document.getElementById('kpiSection'),
+    boardView: document.getElementById('boardView'),
+    listView: document.getElementById('listView'),
+    archiveView: document.getElementById('archiveView'),
+    riskSection: document.getElementById('riskSection'),
+    recentSection: document.getElementById('recentSection'),
+    archiveSummarySection: document.getElementById('archiveSummarySection'),
+    detailShell: document.getElementById('detailShell'),
+    detailPanel: document.getElementById('detailPanel'),
+    detailBackdrop: document.getElementById('detailBackdrop'),
+    toastRoot: document.getElementById('toastRoot'),
+    searchInput: document.getElementById('searchInput'),
+    filterStage: document.getElementById('filterStage'),
+    filterOwner: document.getElementById('filterOwner'),
+    filterPriority: document.getElementById('filterPriority'),
+    filterCategory: document.getElementById('filterCategory'),
+    filterNeedsBuilder: document.getElementById('filterNeedsBuilder'),
+    filterBlocked: document.getElementById('filterBlocked'),
+    workspaceMeta: document.getElementById('workspaceMeta'),
+    viewToggle: document.getElementById('viewToggle'),
+    quickBuilderFilter: document.getElementById('quickBuilderFilter'),
+    downloadExportBtn: document.getElementById('downloadExportBtn'),
+    copyExportBtn: document.getElementById('copyExportBtn'),
+    clearOverridesBtn: document.getElementById('clearOverridesBtn'),
+    closeDetailBtn: document.getElementById('closeDetailBtn'),
+  };
+
+  init();
+
+  function init() {
+    populateFilters();
+    bindStaticEvents();
+    dom.searchInput.value = state.search;
+    render();
+  }
+
+  function readJson(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch (error) {
+      return fallback;
+    }
+  }
+
+  function writeJson(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
+  }
+
+  function persistUi() {
+    writeJson(UI_KEY, {
+      view: state.view,
+      search: state.search,
+      filters: state.filters,
+      selectedTaskId: state.selectedTaskId,
+      archiveTab: state.archiveTab,
+    });
+  }
+
+  function persistOverrides() {
+    writeJson(STORAGE_KEY, state.overrides);
+  }
+
+  function ownerLabel(key) {
+    return owners[key]?.label || key || '未分配';
+  }
+
+  function priorityLabel(key) {
+    return priorities[key]?.label || key || '—';
+  }
+
+  function categoryLabel(key) {
+    return categories[key]?.label || key || '—';
+  }
+
+  function stageLabel(key) {
+    return stages[key]?.label || key || '—';
+  }
+
+  function stageDescription(key) {
+    return stages[key]?.description || '';
+  }
+
+  function formatDate(value, withTime) {
+    if (!value) return '—';
+    const options = {
+      timeZone: 'Asia/Shanghai',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour12: false,
+    };
+    if (withTime !== false) {
+      options.hour = '2-digit';
+      options.minute = '2-digit';
+    }
+    return new Intl.DateTimeFormat('zh-CN', options).format(new Date(value));
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function isArchived(task) {
+    return Boolean(task.archived || task.stage === 'done');
+  }
+
+  function isBlocked(task) {
+    return Boolean(task.blocked || task.stage === 'blocked' || String(task.blocker || '').trim());
+  }
+
+  function needsBuilder(task) {
+    return Boolean(task.needsBuilder || task.stage === 'builder_queue' || isBlocked(task));
+  }
+
+  function compareTasks(a, b) {
+    const priorityDiff = (priorities[a.priority]?.weight ?? 999) - (priorities[b.priority]?.weight ?? 999);
+    if (priorityDiff !== 0) return priorityDiff;
+
+    const stageDiff = (stageRank[a.stage] ?? 999) - (stageRank[b.stage] ?? 999);
+    if (stageDiff !== 0) return stageDiff;
+
+    return new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime();
+  }
+
+  function getEffectiveTasks() {
+    return (payload.tasks || [])
+      .map((baseTask) => {
+        const override = state.overrides[baseTask.id] || {};
+        const merged = { ...baseTask, ...override };
+        merged.blocker = merged.blocker || '';
+        merged.substatus = merged.substatus || '';
+        merged.nextAction = merged.nextAction || '';
+        merged.archived = isArchived(merged);
+        merged.__archived = isArchived(merged);
+        merged.__blocked = isBlocked(merged);
+        merged.__needsBuilder = needsBuilder(merged);
+        merged.__active = !merged.__archived;
+        merged.__heat = heatLevel(merged.updatedAt);
+        merged.__search = [
+          merged.title,
+          merged.summary,
+          merged.goal,
+          merged.substatus,
+          merged.nextAction,
+          merged.blocker,
+          merged.builderAction,
+          ownerLabel(merged.owner),
+          priorityLabel(merged.priority),
+          categoryLabel(merged.category),
+          stageLabel(merged.stage),
+          ...(merged.tags || []),
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase();
+        return merged;
+      })
+      .sort(compareTasks);
+  }
+
+  function heatLevel(updatedAt) {
+    const ageHours = Math.max(0, (Date.now() - new Date(updatedAt || 0).getTime()) / 36e5);
+    if (ageHours <= 24) return 'hot';
+    if (ageHours <= 72) return 'warm';
+    return 'cool';
+  }
+
+  function getDerived() {
+    const tasks = getEffectiveTasks();
+    const activeTasks = tasks.filter((task) => task.__active);
+    const archivedTasks = tasks.filter((task) => task.__archived);
+    const builderTasks = activeTasks.filter((task) => task.__needsBuilder);
+    const blockedTasks = activeTasks.filter((task) => task.__blocked);
+    const reviewTasks = activeTasks.filter((task) => task.stage === 'review');
+    const urgentTasks = activeTasks.filter((task) => task.priority === 'P0');
+    const recentTasks = [...tasks]
+      .sort((a, b) => new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime())
+      .slice(0, 12);
+
+    const stageCounts = Object.fromEntries(stageOrder.map((stage) => [stage, activeTasks.filter((task) => task.stage === stage).length]));
+
+    return {
+      tasks,
+      activeTasks,
+      archivedTasks,
+      builderTasks,
+      blockedTasks,
+      reviewTasks,
+      urgentTasks,
+      recentTasks,
+      stageCounts,
+      activeVisible: activeTasks.filter(matchesFilters),
+      archivedVisible: archivedTasks.filter(matchesArchiveFilters),
+      summary: {
+        activeCount: activeTasks.length,
+        archivedCount: archivedTasks.length,
+        builderCount: builderTasks.length,
+        blockedCount: blockedTasks.length,
+        executingCount: activeTasks.filter((task) => task.stage === 'executing').length,
+        reviewCount: reviewTasks.length,
+        overrideCount: Object.keys(state.overrides).length,
+      },
+    };
+  }
+
+  function matchesFilters(task) {
+    if (!task.__active) return false;
+    if (state.filters.stage !== 'all' && task.stage !== state.filters.stage) return false;
+    if (state.filters.owner !== 'all' && task.owner !== state.filters.owner) return false;
+    if (state.filters.priority !== 'all' && task.priority !== state.filters.priority) return false;
+    if (state.filters.category !== 'all' && task.category !== state.filters.category) return false;
+    if (state.filters.needsBuilder === 'yes' && !task.__needsBuilder) return false;
+    if (state.filters.needsBuilder === 'no' && task.__needsBuilder) return false;
+    if (state.filters.blocked === 'yes' && !task.__blocked) return false;
+    if (state.filters.blocked === 'no' && task.__blocked) return false;
+    if (state.search && !task.__search.includes(state.search)) return false;
+    return true;
+  }
+
+  function matchesArchiveFilters(task) {
+    if (!task.__archived) return false;
+    if (state.filters.owner !== 'all' && task.owner !== state.filters.owner) return false;
+    if (state.filters.priority !== 'all' && task.priority !== state.filters.priority) return false;
+    if (state.filters.category !== 'all' && task.category !== state.filters.category) return false;
+    if (state.search && !task.__search.includes(state.search)) return false;
+    if (state.archiveTab !== 'all' && task.category !== state.archiveTab) return false;
+    return true;
+  }
+
+  function ensureSelectedTask(derived) {
+    if (state.selectedTaskId && derived.tasks.some((task) => task.id === state.selectedTaskId)) return;
+    state.selectedTaskId = derived.activeVisible[0]?.id || derived.activeTasks[0]?.id || derived.archivedTasks[0]?.id || null;
+  }
+
+  function render() {
+    const derived = getDerived();
+    ensureSelectedTask(derived);
+    renderViewToggle();
+    renderFocus(derived);
+    renderKpis(derived);
+    renderWorkspace(derived);
+    renderRisk(derived);
+    renderRecent(derived);
+    renderArchiveSummary(derived);
+    renderDetail(derived);
+    syncControls();
+    syncDrawer();
+    persistUi();
+  }
+
+  function populateFilters() {
+    fillSelect(dom.filterStage, [{ value: 'all', label: '全部阶段' }, ...stageOrder.filter((stage) => stage !== 'done').map((stage) => ({ value: stage, label: stageLabel(stage) }))]);
+    fillSelect(dom.filterOwner, [{ value: 'all', label: '全部负责人' }, ...Object.keys(owners).map((owner) => ({ value: owner, label: ownerLabel(owner) }))]);
+    fillSelect(dom.filterPriority, [{ value: 'all', label: '全部优先级' }, ...priorityOrder.map((priority) => ({ value: priority, label: priorityLabel(priority) }))]);
+    fillSelect(dom.filterCategory, [{ value: 'all', label: '全部分类' }, ...Object.keys(categories).map((category) => ({ value: category, label: categoryLabel(category) }))]);
+    fillSelect(dom.filterNeedsBuilder, [
+      { value: 'all', label: '全部' },
+      { value: 'yes', label: '只看待我处理' },
+      { value: 'no', label: '排除待我处理' },
+    ]);
+    fillSelect(dom.filterBlocked, [
+      { value: 'all', label: '全部' },
+      { value: 'yes', label: '只看阻塞' },
+      { value: 'no', label: '排除阻塞' },
+    ]);
+  }
+
+  function fillSelect(select, options) {
+    select.innerHTML = options
+      .map((option) => `<option value="${escapeHtml(option.value)}">${escapeHtml(option.label)}</option>`)
+      .join('');
+  }
+
+  function syncControls() {
+    dom.filterStage.value = state.filters.stage;
+    dom.filterOwner.value = state.filters.owner;
+    dom.filterPriority.value = state.filters.priority;
+    dom.filterCategory.value = state.filters.category;
+    dom.filterNeedsBuilder.value = state.filters.needsBuilder;
+    dom.filterBlocked.value = state.filters.blocked;
+    dom.searchInput.value = state.search;
+  }
+
+  function renderViewToggle() {
+    const items = [
+      { value: 'board', label: '看板' },
+      { value: 'list', label: '列表' },
+      { value: 'archive', label: '归档视图' },
+    ];
+    dom.viewToggle.innerHTML = items
+      .map((item) => `<button class="tab-btn ${state.view === item.value ? 'is-active' : ''}" data-action="switch-view" data-view="${item.value}" type="button">${item.label}</button>`)
+      .join('');
+  }
+
+  function renderFocus(derived) {
+    const tasks = derived.builderTasks.slice(0, 6);
+    dom.focusSection.innerHTML = `
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">Inbox First</div>
+          <h2 class="section-title">待我处理</h2>
+          <p class="section-desc">优先把需要 BuilderDong 决策、扫码、补凭证或给输入的任务单独抬出来，避免埋在流转列里。</p>
+        </div>
+      </div>
+      <div class="focus-wrap">
+        <div class="focus-grid">
+          ${tasks.length ? tasks.map((task) => focusCard(task)).join('') : `<div class="empty-state">当前没有待我处理事项。</div>`}
+        </div>
+        <aside class="quick-panel">
+          <h3>快速动作</h3>
+          <button class="quick-link" data-action="apply-builder-filter" type="button">
+            <strong>一键过滤待我处理</strong><br>
+            <small>把主区域切到只看 BuilderDong 相关任务</small>
+          </button>
+          <button class="quick-link" data-action="apply-blocked-filter" type="button">
+            <strong>聚焦阻塞 / 风险</strong><br>
+            <small>快速筛出卡在权限、凭证、扫码的事项</small>
+          </button>
+          <button class="quick-link" data-action="clear-filters" type="button">
+            <strong>恢复全局视图</strong><br>
+            <small>清空当前搜索和筛选，回到总览</small>
+          </button>
+          <div class="meta-chip">待我处理 <strong>${derived.summary.builderCount}</strong></div>
+          <div class="meta-chip">本地草稿 <strong>${derived.summary.overrideCount}</strong></div>
+        </aside>
+      </div>
+    `;
+  }
+
+  function renderKpis(derived) {
+    const items = [
+      { label: '活动任务', value: derived.summary.activeCount, foot: '当前仍在活动链路中的任务总数' },
+      { label: '待我处理', value: derived.summary.builderCount, foot: '需要 BuilderDong 输入 / 决策 / 登录' },
+      { label: '执行中', value: derived.summary.executingCount, foot: '已经进入实作或产出阶段' },
+      { label: '阻塞', value: derived.summary.blockedCount, foot: '缺凭证、权限、扫码或外部条件' },
+      { label: '待验收', value: derived.summary.reviewCount, foot: '成果已经出炉，等待回归或发布' },
+      { label: '本地草稿', value: derived.summary.overrideCount, foot: '仅保存在当前浏览器 localStorage' },
+    ];
+
+    dom.kpiSection.innerHTML = items
+      .map(
+        (item) => `
+          <article class="panel kpi-card">
+            <div class="kpi-label">${escapeHtml(item.label)}</div>
+            <div class="kpi-value">${escapeHtml(String(item.value))}</div>
+            <div class="kpi-foot">${escapeHtml(item.foot)}</div>
+          </article>
+        `
+      )
+      .join('');
+  }
+
+  function renderWorkspace(derived) {
+    dom.workspaceMeta.innerHTML = [
+      metaBadge(`当前视图：${state.view === 'board' ? '看板' : state.view === 'list' ? '列表' : '归档'}`),
+      metaBadge(`筛选后活动任务：${derived.activeVisible.length}`),
+      metaBadge(`拖拽支持：看板内可直接改阶段`),
+      metaBadge(`编辑持久化：localStorage`),
+    ].join('');
+
+    dom.boardView.classList.toggle('is-hidden', state.view !== 'board');
+    dom.listView.classList.toggle('is-hidden', state.view !== 'list');
+    dom.archiveView.classList.toggle('is-hidden', state.view !== 'archive');
+
+    renderBoardView(derived);
+    renderListView(derived);
+    renderArchiveView(derived);
+  }
+
+  function renderBoardView(derived) {
+    dom.boardView.innerHTML = `
+      <div class="board-grid">
+        ${stageOrder
+          .filter((stage) => stage !== 'done')
+          .map((stage) => {
+            const laneTasks = derived.activeVisible.filter((task) => task.stage === stage);
+            return `
+              <section class="lane" data-stage-lane="${stage}">
+                <header class="lane-head">
+                  <div>
+                    <h3>${escapeHtml(stageLabel(stage))}</h3>
+                    <p>${escapeHtml(stageDescription(stage))}</p>
+                  </div>
+                  <div class="lane-count">${laneTasks.length}</div>
+                </header>
+                <div class="lane-body">
+                  ${laneTasks.length ? laneTasks.map((task) => taskCard(task, { draggable: true })).join('') : '<div class="empty-state"><div>当前筛选下为空</div><div class="empty-meta">可将任务拖拽到这里</div></div>'}
+                </div>
+              </section>
+            `;
+          })
+          .join('')}
+      </div>
+    `;
+  }
+
+  function renderListView(derived) {
+    dom.listView.innerHTML = `
+      <div class="list-view">
+        <div class="list-head">
+          <div>任务</div>
+          <div>阶段</div>
+          <div>负责人</div>
+          <div>优先级</div>
+          <div>分类</div>
+          <div>更新时间</div>
+        </div>
+        ${derived.activeVisible.length
+          ? derived.activeVisible
+              .map(
+                (task) => `
+                  <button class="list-row ${task.id === state.selectedTaskId ? 'is-selected' : ''}" data-task-id="${task.id}" type="button">
+                    <div>
+                      <div class="list-title">${escapeHtml(task.title)}</div>
+                      <div class="list-muted">${escapeHtml(task.substatus || task.summary || '')}</div>
+                    </div>
+                    <div>${badge(stageLabel(task.stage), `stage-${task.stage}`)}</div>
+                    <div>${escapeHtml(ownerLabel(task.owner))}</div>
+                    <div>${badge(priorityLabel(task.priority), `priority-${task.priority}`)}</div>
+                    <div>${escapeHtml(categoryLabel(task.category))}</div>
+                    <div class="list-muted">${escapeHtml(formatDate(task.updatedAt))}</div>
+                  </button>
+                `
+              )
+              .join('')
+          : '<div class="empty-state">当前筛选下没有活动任务。</div>'}
+      </div>
+    `;
+  }
+
+  function renderArchiveView(derived) {
+    const visibleArchived = derived.archivedVisible;
+    dom.archiveView.innerHTML = `
+      <div class="archive-tabs">
+        <button class="tab-btn ${state.archiveTab === 'all' ? 'is-active' : ''}" data-action="archive-tab" data-category="all" type="button">全部归档</button>
+        ${Object.keys(categories)
+          .map(
+            (category) => `
+              <button class="tab-btn ${state.archiveTab === category ? 'is-active' : ''}" data-action="archive-tab" data-category="${category}" type="button">
+                ${escapeHtml(categoryLabel(category))}
+              </button>
+            `
+          )
+          .join('')}
+      </div>
+      <div class="archive-stack">
+        ${visibleArchived.length
+          ? visibleArchived.map((task) => archiveCard(task)).join('')
+          : '<div class="empty-state">当前筛选下没有归档任务。</div>'}
+      </div>
+    `;
+  }
+
+  function renderRisk(derived) {
+    dom.riskSection.innerHTML = `
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">Exceptions</div>
+          <h2 class="section-title">阻塞 / 风险 / 待验收</h2>
+          <p class="section-desc">把最容易卡住推进的事项集中看，减少在看板里来回找。</p>
+        </div>
+      </div>
+      <div class="summary-grid">
+        ${summaryPanel('阻塞区', '需要外部条件、权限、凭证或扫码', derived.blockedTasks.slice(0, 5))}
+        ${summaryPanel('待验收', '成果已出，等待验证或发布', derived.reviewTasks.slice(0, 5))}
+        ${summaryPanel('高优先级热点', '当前仍活跃的 P0 / P1 任务', derived.activeTasks.filter((task) => ['P0', 'P1'].includes(task.priority)).slice(0, 5))}
+      </div>
+    `;
+  }
+
+  function renderRecent(derived) {
+    dom.recentSection.innerHTML = `
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">Recent</div>
+          <h2 class="section-title">最近更新</h2>
+          <p class="section-desc">按任务更新时间排序，快速扫一遍最近哪里被推进了、哪里刚卡住。</p>
+        </div>
+      </div>
+      <div class="recent-grid">
+        ${derived.recentTasks.map((task) => timelineCard(task)).join('')}
+      </div>
+    `;
+  }
+
+  function renderArchiveSummary(derived) {
+    const archived = derived.archivedTasks.filter((task) => state.archiveTab === 'all' || task.category === state.archiveTab).slice(0, 8);
+    dom.archiveSummarySection.innerHTML = `
+      <div class="section-head">
+        <div>
+          <div class="section-kicker">Archive</div>
+          <h2 class="section-title">分类归档</h2>
+          <p class="section-desc">完成事项不占用主看板，但仍按分类保留检索与追溯入口。</p>
+        </div>
+      </div>
+      <div class="archive-tabs">
+        <button class="tab-btn ${state.archiveTab === 'all' ? 'is-active' : ''}" data-action="archive-tab" data-category="all" type="button">全部</button>
+        ${Object.keys(categories)
+          .map(
+            (category) => `
+              <button class="tab-btn ${state.archiveTab === category ? 'is-active' : ''}" data-action="archive-tab" data-category="${category}" type="button">
+                ${escapeHtml(categoryLabel(category))}
+              </button>
+            `
+          )
+          .join('')}
+      </div>
+      <div class="archive-summary-grid">
+        ${archived.length ? archived.map((task) => archiveCard(task)).join('') : '<div class="empty-state">当前分类下暂无归档任务。</div>'}
+      </div>
+    `;
+  }
+
+  function renderDetail(derived) {
+    const task = derived.tasks.find((item) => item.id === state.selectedTaskId);
+    if (!task) {
+      dom.detailPanel.innerHTML = '<div class="detail-empty"><div class="empty-state">当前没有可展示的任务。</div></div>';
+      return;
+    }
+
+    const history = [...(task.history || [])].sort((a, b) => new Date(b.at || 0).getTime() - new Date(a.at || 0).getTime());
+    dom.detailPanel.innerHTML = `
+      <div class="detail-stamp">最近更新 ${escapeHtml(formatDate(task.updatedAt))}</div>
+      <h3 class="detail-title">${escapeHtml(task.title)}</h3>
+      <div class="detail-meta">
+        ${badge(priorityLabel(task.priority), `priority-${task.priority}`)}
+        ${badge(stageLabel(task.stage), `stage-${task.stage}`)}
+        ${badge(categoryLabel(task.category))}
+        ${badge(ownerLabel(task.owner))}
+        ${task.__blocked ? badge('阻塞', 'is-blocked') : ''}
+        ${task.__needsBuilder ? badge('待我处理', 'needs-builder') : ''}
+      </div>
+      <p class="detail-copy">${escapeHtml(task.summary || '暂无摘要')}</p>
+      <div class="detail-grid">
+        <div class="detail-stat"><strong>目标</strong><span>${escapeHtml(task.goal || '—')}</span></div>
+        <div class="detail-stat"><strong>BuilderDong 动作</strong><span>${escapeHtml(task.builderAction || '当前无需动作')}</span></div>
+      </div>
+
+      <form class="detail-form" data-task-id="${task.id}">
+        <div class="detail-form-grid">
+          <label class="detail-field">
+            <span>阶段</span>
+            <select data-detail-field="stage">
+              ${stageOrder.map((stage) => `<option value="${stage}" ${task.stage === stage ? 'selected' : ''}>${escapeHtml(stageLabel(stage))}</option>`).join('')}
+            </select>
+          </label>
+          <label class="detail-field">
+            <span>负责人</span>
+            <select data-detail-field="owner">
+              ${Object.keys(owners).map((owner) => `<option value="${owner}" ${task.owner === owner ? 'selected' : ''}>${escapeHtml(ownerLabel(owner))}</option>`).join('')}
+            </select>
+          </label>
+          <label class="detail-field">
+            <span>优先级</span>
+            <select data-detail-field="priority">
+              ${priorityOrder.map((priority) => `<option value="${priority}" ${task.priority === priority ? 'selected' : ''}>${escapeHtml(priorityLabel(priority))}</option>`).join('')}
+            </select>
+          </label>
+          <label class="detail-field">
+            <span>当前子状态</span>
+            <textarea data-detail-field="substatus" placeholder="例如：已回执，等待扫码">${escapeHtml(task.substatus || '')}</textarea>
+          </label>
+        </div>
+        <label class="detail-field">
+          <span>下一步</span>
+          <textarea data-detail-field="nextAction" placeholder="把下一步写得像真实的行动项">${escapeHtml(task.nextAction || '')}</textarea>
+        </label>
+        <label class="detail-field">
+          <span>阻塞说明</span>
+          <textarea data-detail-field="blocker" placeholder="没有阻塞就留空">${escapeHtml(task.blocker || '')}</textarea>
+        </label>
+        <label class="detail-checkbox">
+          <input type="checkbox" data-detail-field="archived" ${task.__archived ? 'checked' : ''}>
+          <span>标记为归档（取消时若当前阶段是 done，会自动回到 review）</span>
+        </label>
+        <div class="detail-actions">
+          <button class="btn" type="button" data-action="restore-task" data-task-id="${task.id}">恢复该任务默认值</button>
+          <button class="btn" type="button" data-action="copy-task-json" data-task-id="${task.id}">复制当前任务 JSON</button>
+        </div>
+      </form>
+
+      <div class="detail-block">
+        <h3>任务上下文</h3>
+        <div class="badges">
+          ${task.collaborators?.length ? task.collaborators.map((owner) => badge(`协作：${ownerLabel(owner)}`)).join('') : badge('协作：—')}
+          ${(task.tags || []).length ? task.tags.map((tag) => badge(`#${tag}`)).join('') : badge('无标签')}
+        </div>
+        <p class="detail-muted">创建于 ${escapeHtml(formatDate(task.createdAt))}${task.doneAt ? ` · 完成于 ${escapeHtml(formatDate(task.doneAt))}` : ''}</p>
+      </div>
+
+      <div class="detail-block">
+        <h3>历史流</h3>
+        <div class="history-list">
+          ${history.length
+            ? history
+                .map(
+                  (event) => `
+                    <article class="history-item">
+                      <div class="timeline-meta">${escapeHtml(formatDate(event.at))} · ${escapeHtml(ownerLabel(event.actor))} · ${escapeHtml(event.type || 'event')}</div>
+                      <div>${escapeHtml(event.summary || '')}</div>
+                    </article>
+                  `
+                )
+                .join('')
+            : '<div class="empty-state">暂无历史记录。</div>'}
+        </div>
+      </div>
+    `;
+  }
+
+  function focusCard(task) {
+    return `
+      <button class="focus-card ${task.id === state.selectedTaskId ? 'is-selected' : ''}" data-task-id="${task.id}" type="button">
+        <div class="focus-card-top">
+          <div class="badges">
+            ${badge(priorityLabel(task.priority), `priority-${task.priority}`)}
+            ${badge(stageLabel(task.stage), `stage-${task.stage}`)}
+          </div>
+          <div class="task-metrics">
+            <span class="heat-dot is-${task.__heat}"></span>
+            <span>${escapeHtml(formatDate(task.updatedAt, false))}</span>
+          </div>
+        </div>
+        <h3>${escapeHtml(task.title)}</h3>
+        <p>${escapeHtml(task.builderAction || task.nextAction || task.substatus || task.summary || '')}</p>
+        <div class="focus-card-meta">负责人：${escapeHtml(ownerLabel(task.owner))}</div>
+      </button>
+    `;
+  }
+
+  function taskCard(task, options) {
+    const draggable = options?.draggable ? 'true' : 'false';
+    return `
+      <button
+        class="task-card ${task.id === state.selectedTaskId ? 'is-selected' : ''}"
+        data-task-id="${task.id}"
+        data-draggable="${draggable}"
+        draggable="${draggable}"
+        type="button"
+      >
+        <div class="task-card-top">
+          <div class="badges">
+            ${badge(priorityLabel(task.priority), `priority-${task.priority}`)}
+            ${task.__needsBuilder ? badge('待我处理', 'needs-builder') : ''}
+            ${task.__blocked ? badge('阻塞', 'is-blocked') : ''}
+          </div>
+          <div class="task-metrics">
+            <span class="heat-dot is-${task.__heat}"></span>
+            <span>${escapeHtml(formatDate(task.updatedAt, false))}</span>
+          </div>
+        </div>
+        <div class="task-title-row">
+          <div class="task-title">${escapeHtml(task.title)}</div>
+        </div>
+        <div class="task-copy">${escapeHtml(task.substatus || task.summary || '')}</div>
+        <div class="task-card-foot">
+          <div class="badges">
+            ${badge(ownerLabel(task.owner))}
+            ${badge(categoryLabel(task.category))}
+          </div>
+          <div class="list-muted">${escapeHtml(task.nextAction || '暂无下一步')}</div>
+        </div>
+      </button>
+    `;
+  }
+
+  function summaryPanel(title, desc, tasks) {
+    return `
+      <article class="summary-card">
+        <div class="summary-card-top">
+          <div>
+            <div class="section-kicker">Watch</div>
+            <h3>${escapeHtml(title)}</h3>
+          </div>
+          <div class="meta-chip"><strong>${tasks.length}</strong></div>
+        </div>
+        <p>${escapeHtml(desc)}</p>
+        ${tasks.length
+          ? tasks
+              .map(
+                (task) => `
+                  <button class="quick-link" data-task-id="${task.id}" type="button">
+                    <strong>${escapeHtml(task.title)}</strong><br>
+                    <small>${escapeHtml(task.substatus || task.summary || task.nextAction || '')}</small>
+                  </button>
+                `
+              )
+              .join('')
+          : '<div class="empty-state">当前为空。</div>'}
+      </article>
+    `;
+  }
+
+  function timelineCard(task) {
+    return `
+      <button class="timeline-card ${task.id === state.selectedTaskId ? 'is-selected' : ''}" data-task-id="${task.id}" type="button">
+        <div class="timeline-meta">${escapeHtml(formatDate(task.updatedAt))} · ${escapeHtml(ownerLabel(task.owner))}</div>
+        <h3>${escapeHtml(task.title)}</h3>
+        <p>${escapeHtml(task.substatus || task.summary || '')}</p>
+        <div class="badges">
+          ${badge(stageLabel(task.stage), `stage-${task.stage}`)}
+          ${badge(priorityLabel(task.priority), `priority-${task.priority}`)}
+        </div>
+      </button>
+    `;
+  }
+
+  function archiveCard(task) {
+    return `
+      <button class="archive-card ${task.id === state.selectedTaskId ? 'is-selected' : ''}" data-task-id="${task.id}" type="button">
+        <div class="archive-card-top">
+          <div class="badges">
+            ${badge(categoryLabel(task.category))}
+            ${badge(priorityLabel(task.priority), `priority-${task.priority}`)}
+          </div>
+          <div class="list-muted">${escapeHtml(formatDate(task.doneAt || task.updatedAt, false))}</div>
+        </div>
+        <h3>${escapeHtml(task.title)}</h3>
+        <p>${escapeHtml(task.archivedReason || task.substatus || task.summary || '')}</p>
+        <div class="archive-meta">${escapeHtml(ownerLabel(task.owner))} · ${escapeHtml(stageLabel(task.stage))}</div>
+      </button>
+    `;
+  }
+
+  function metaBadge(label) {
+    return `<div class="meta-chip">${escapeHtml(label)}</div>`;
+  }
+
+  function badge(label, className) {
+    return `<span class="badge ${className || ''}">${escapeHtml(label)}</span>`;
+  }
+
+  function bindStaticEvents() {
+    dom.searchInput.addEventListener('input', (event) => {
+      state.search = event.target.value.trim().toLowerCase();
+      render();
+    });
+
+    [
+      ['stage', dom.filterStage],
+      ['owner', dom.filterOwner],
+      ['priority', dom.filterPriority],
+      ['category', dom.filterCategory],
+      ['needsBuilder', dom.filterNeedsBuilder],
+      ['blocked', dom.filterBlocked],
+    ].forEach(([key, node]) => {
+      node.addEventListener('change', (event) => {
+        state.filters[key] = event.target.value;
+        render();
+      });
+    });
+
+    dom.quickBuilderFilter.addEventListener('click', () => {
+      applyBuilderFilter();
+    });
+
+    dom.downloadExportBtn.addEventListener('click', downloadExport);
+    dom.copyExportBtn.addEventListener('click', copyExport);
+    dom.clearOverridesBtn.addEventListener('click', clearOverrides);
+    dom.closeDetailBtn.addEventListener('click', closeDrawer);
+    dom.detailBackdrop.addEventListener('click', closeDrawer);
+
+    document.addEventListener('click', handleClick);
+    document.addEventListener('change', handleDetailSave);
+    document.addEventListener('blur', handleDetailSave, true);
+    document.addEventListener('dragstart', handleDragStart);
+    document.addEventListener('dragend', handleDragEnd);
+    document.addEventListener('dragover', handleDragOver);
+    document.addEventListener('dragleave', handleDragLeave);
+    document.addEventListener('drop', handleDrop);
+    window.addEventListener('resize', syncDrawer);
+  }
+
+  function handleClick(event) {
+    const actionNode = event.target.closest('[data-action]');
+    if (actionNode) {
+      const action = actionNode.dataset.action;
+      if (action === 'switch-view') {
+        state.view = actionNode.dataset.view;
+        render();
+        return;
+      }
+      if (action === 'archive-tab') {
+        state.archiveTab = actionNode.dataset.category;
+        render();
+        return;
+      }
+      if (action === 'apply-builder-filter') {
+        applyBuilderFilter();
+        return;
+      }
+      if (action === 'apply-blocked-filter') {
+        state.filters.blocked = 'yes';
+        state.view = 'board';
+        render();
+        return;
+      }
+      if (action === 'clear-filters') {
+        resetFilters();
+        render();
+        return;
+      }
+      if (action === 'restore-task') {
+        const taskId = actionNode.dataset.taskId;
+        delete state.overrides[taskId];
+        persistOverrides();
+        showToast('已恢复该任务的默认数据');
+        render();
+        return;
+      }
+      if (action === 'copy-task-json') {
+        const taskId = actionNode.dataset.taskId;
+        const task = getEffectiveTasks().find((item) => item.id === taskId);
+        if (task) copyText(JSON.stringify(normalizeTask(task), null, 2), '已复制当前任务 JSON');
+        return;
+      }
+    }
+
+    const taskNode = event.target.closest('[data-task-id]');
+    if (taskNode) {
+      openTask(taskNode.dataset.taskId);
+    }
+  }
+
+  function handleDetailSave(event) {
+    const field = event.target?.dataset?.detailField;
+    if (!field) return;
+    if (event.type === 'blur' && event.target.tagName !== 'TEXTAREA') return;
+
+    const taskId = event.target.closest('[data-task-id]')?.dataset?.taskId || state.selectedTaskId;
+    if (!taskId) return;
+
+    let value;
+    if (event.target.type === 'checkbox') value = event.target.checked;
+    else value = event.target.value;
+
+    saveField(taskId, field, value);
+  }
+
+  function saveField(taskId, field, value) {
+    const current = getEffectiveTasks().find((task) => task.id === taskId);
+    if (!current) return;
+
+    const patch = { [field]: value, updatedAt: new Date().toISOString() };
+
+    if (field === 'stage') {
+      patch.archived = value === 'done' ? true : false;
+      patch.blocked = value === 'blocked';
+      if (value === 'done') patch.doneAt = new Date().toISOString();
+    }
+
+    if (field === 'blocker') {
+      const hasBlocker = Boolean(String(value || '').trim());
+      patch.blocked = hasBlocker || current.stage === 'blocked';
+    }
+
+    if (field === 'archived') {
+      patch.archived = Boolean(value);
+      if (!value && current.stage === 'done') {
+        patch.stage = 'review';
+      }
+      if (value && current.stage !== 'done' && !current.doneAt) {
+        patch.doneAt = new Date().toISOString();
+      }
+    }
+
+    state.overrides[taskId] = {
+      ...(state.overrides[taskId] || {}),
+      ...patch,
+    };
+
+    persistOverrides();
+    showToast('已保存到本地草稿');
+    render();
+  }
+
+  function applyBuilderFilter() {
+    state.view = 'board';
+    state.filters.needsBuilder = 'yes';
+    render();
+  }
+
+  function resetFilters() {
+    state.filters = {
+      stage: 'all',
+      owner: 'all',
+      priority: 'all',
+      category: 'all',
+      needsBuilder: 'all',
+      blocked: 'all',
+    };
+    state.search = '';
+    state.archiveTab = 'all';
+  }
+
+  function clearOverrides() {
+    if (!window.confirm('确定要清除所有本地修改吗？此操作不会影响仓库里的 data/tasks.json。')) return;
+    state.overrides = {};
+    persistOverrides();
+    showToast('已清除本地修改，恢复默认数据');
+    render();
+  }
+
+  function openTask(taskId) {
+    state.selectedTaskId = taskId;
+    if (window.innerWidth <= MOBILE_BREAKPOINT) {
+      state.drawerOpen = true;
+    }
+    render();
+  }
+
+  function closeDrawer() {
+    state.drawerOpen = false;
+    syncDrawer();
+  }
+
+  function syncDrawer() {
+    const shouldOverlay = window.innerWidth <= MOBILE_BREAKPOINT;
+    dom.detailShell.classList.toggle('is-open', shouldOverlay && state.drawerOpen);
+    dom.detailBackdrop.classList.toggle('is-open', shouldOverlay && state.drawerOpen);
+    if (!shouldOverlay) {
+      dom.detailShell.classList.remove('is-open');
+      dom.detailBackdrop.classList.remove('is-open');
+    }
+  }
+
+  function handleDragStart(event) {
+    const card = event.target.closest('.task-card[data-draggable="true"]');
+    if (!card) return;
+    event.dataTransfer.setData('text/plain', card.dataset.taskId);
+    event.dataTransfer.effectAllowed = 'move';
+    card.classList.add('is-dragging');
+  }
+
+  function handleDragEnd(event) {
+    const card = event.target.closest('.task-card');
+    if (card) card.classList.remove('is-dragging');
+    document.querySelectorAll('.lane.is-drop-target').forEach((lane) => lane.classList.remove('is-drop-target'));
+  }
+
+  function handleDragOver(event) {
+    const lane = event.target.closest('[data-stage-lane]');
+    if (!lane) return;
+    event.preventDefault();
+    lane.classList.add('is-drop-target');
+  }
+
+  function handleDragLeave(event) {
+    const lane = event.target.closest('[data-stage-lane]');
+    if (!lane) return;
+    if (lane.contains(event.relatedTarget)) return;
+    lane.classList.remove('is-drop-target');
+  }
+
+  function handleDrop(event) {
+    const lane = event.target.closest('[data-stage-lane]');
+    if (!lane) return;
+    event.preventDefault();
+    lane.classList.remove('is-drop-target');
+    const taskId = event.dataTransfer.getData('text/plain');
+    const nextStage = lane.dataset.stageLane;
+    if (!taskId || !nextStage) return;
+    saveField(taskId, 'stage', nextStage);
+    showToast(`已将任务移动到「${stageLabel(nextStage)}」`);
+  }
+
+  function getExportPayload() {
+    return {
+      version: payload.version,
+      board: payload.board,
+      meta: payload.meta,
+      tasks: getEffectiveTasks().map(normalizeTask),
+    };
+  }
+
+  function normalizeTask(task) {
+    const output = {};
+    baseTaskKeys.forEach((key) => {
+      if (typeof task[key] !== 'undefined') output[key] = task[key];
+    });
+    return output;
+  }
+
+  function downloadExport() {
+    const exportText = JSON.stringify(getExportPayload(), null, 2);
+    const blob = new Blob([`${exportText}\n`], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `tasks-local-export-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    showToast('已下载当前 tasks JSON');
+  }
+
+  function copyExport() {
+    copyText(JSON.stringify(getExportPayload(), null, 2), '已复制当前 tasks JSON');
+  }
+
+  function copyText(text, successMessage) {
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(text).then(
+        () => showToast(successMessage),
+        () => fallbackCopy(text, successMessage)
+      );
+    } else {
+      fallbackCopy(text, successMessage);
+    }
+  }
+
+  function fallbackCopy(text, successMessage) {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.left = '-9999px';
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    textarea.remove();
+    showToast(successMessage);
+  }
+
+  function showToast(message) {
+    const node = document.createElement('div');
+    node.className = 'toast';
+    node.textContent = message;
+    dom.toastRoot.appendChild(node);
+    setTimeout(() => {
+      node.style.opacity = '0';
+      setTimeout(() => node.remove(), 180);
+    }, 1800);
+  }
+})();
+
+  </script>
+</body>
+</html>
